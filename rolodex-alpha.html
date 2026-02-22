@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rolodex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+–stone-50: #fafaf9;
+–stone-100: #f5f5f4;
+–stone-200: #e7e5e4;
+–stone-300: #d6d3d1;
+–stone-400: #a8a29e;
+–stone-500: #78716c;
+–stone-600: #57534e;
+–stone-700: #44403c;
+–stone-800: #292524;
+–stone-900: #1c1917;
+–stone-950: #0c0a09;
+–amber-50: #fffbeb;
+–amber-100: #fef3c7;
+–amber-200: #fde68a;
+–amber-400: #fbbf24;
+–amber-500: #f59e0b;
+–amber-600: #d97706;
+–teal-50: #f0fdfa;
+–teal-100: #ccfbf1;
+–teal-400: #2dd4bf;
+–teal-500: #14b8a6;
+–teal-600: #0d9488;
+–teal-700: #0f766e;
+–rose-50: #fff1f2;
+–rose-400: #fb7185;
+–rose-500: #f43f5e;
+–blue-50: #eff6ff;
+–blue-400: #60a5fa;
+–blue-500: #3b82f6;
+–violet-50: #f5f3ff;
+–violet-400: #a78bfa;
+–violet-500: #8b5cf6;
+–green-400: #4ade80;
+–green-500: #22c55e;
+–green-600: #16a34a;
+–radius: 16px;
+–radius-sm: 10px;
+–radius-full: 9999px;
+–shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+–shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+–shadow-lg: 0 12px 32px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+–shadow-xl: 0 20px 50px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+}
+
+html { font-size: 16px; }
+body {
+font-family: ‘DM Sans’, sans-serif;
+background: var(–stone-100);
+color: var(–stone-800);
+min-height: 100dvh;
+-webkit-font-smoothing: antialiased;
+}
+
+/* ─── SHELL ─── */
+.app-shell {
+max-width: 460px;
+margin: 0 auto;
+min-height: 100dvh;
+background: var(–stone-50);
+position: relative;
+overflow-x: hidden;
+}
+
+/* ─── VIEWS (slide transitions) ─── */
+.view {
+position: absolute;
+inset: 0;
+overflow-y: auto;
+overflow-x: hidden;
+transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+will-change: transform, opacity;
+background: var(–stone-50);
+padding-bottom: 88px;
+}
+.view.hidden-right { transform: translateX(100%); opacity: 0; pointer-events: none; }
+.view.hidden-left  { transform: translateX(-30%); opacity: 0; pointer-events: none; }
+.view.active { transform: translateX(0); opacity: 1; }
+
+/* ─── TOP BAR ─── */
+.top-bar {
+position: sticky; top: 0; z-index: 20;
+padding: 16px 20px 12px;
+background: rgba(250,250,249,0.85);
+backdrop-filter: blur(16px);
+-webkit-backdrop-filter: blur(16px);
+border-bottom: 1px solid var(–stone-200);
+}
+.top-bar h1 {
+font-family: ‘Fraunces’, serif;
+font-weight: 700;
+font-size: 1.65rem;
+letter-spacing: -0.02em;
+color: var(–stone-900);
+}
+.top-bar-row { display: flex; align-items: center; justify-content: space-between; }
+.top-bar .subtitle {
+font-size: 0.82rem;
+color: var(–stone-400);
+font-weight: 400;
+margin-top: 2px;
+}
+
+/* ─── SEARCH ─── */
+.search-wrap {
+margin: 12px 20px 0;
+position: relative;
+}
+.search-wrap svg {
+position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+color: var(–stone-400);
+}
+.search-input {
+width: 100%;
+padding: 11px 14px 11px 42px;
+border: 1.5px solid var(–stone-200);
+border-radius: var(–radius-sm);
+font-family: inherit;
+font-size: 0.9rem;
+background: var(–stone-100);
+color: var(–stone-800);
+outline: none;
+transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.search-input::placeholder { color: var(–stone-400); }
+.search-input:focus {
+border-color: var(–teal-500);
+box-shadow: 0 0 0 3px rgba(20,184,166,0.12);
+background: #fff;
+}
+
+/* ─── SECTION LABELS ─── */
+.section-label {
+padding: 20px 20px 8px;
+font-size: 0.72rem;
+font-weight: 600;
+text-transform: uppercase;
+letter-spacing: 0.08em;
+color: var(–stone-400);
+}
+
+/* ─── PERSON ROW ─── */
+.person-row {
+display: flex; align-items: center; gap: 14px;
+padding: 10px 20px;
+cursor: pointer;
+transition: background 0.15s;
+position: relative;
+}
+.person-row:hover { background: var(–stone-100); }
+.person-row:active { background: var(–stone-200); }
+
+.avatar {
+width: 48px; height: 48px;
+border-radius: var(–radius-full);
+object-fit: cover;
+flex-shrink: 0;
+background: var(–stone-200);
+display: flex; align-items: center; justify-content: center;
+font-weight: 600; font-size: 1rem; color: var(–stone-500);
+overflow: hidden;
+position: relative;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar.sm { width: 36px; height: 36px; font-size: 0.8rem; }
+.avatar.lg { width: 96px; height: 96px; font-size: 2rem; }
+.avatar.xl { width: 112px; height: 112px; font-size: 2.4rem; }
+
+.person-info { flex: 1; min-width: 0; }
+.person-name {
+font-weight: 600; font-size: 0.95rem; color: var(–stone-900);
+white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.person-handle {
+font-size: 0.8rem; color: var(–stone-400); font-weight: 400;
+white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.person-mutual {
+font-size: 0.75rem; color: var(–teal-600); font-weight: 500;
+margin-top: 1px;
+}
+.chevron-right {
+color: var(–stone-300);
+flex-shrink: 0;
+}
+
+/* ─── BOTTOM NAV ─── */
+.bottom-nav {
+position: fixed;
+bottom: 0;
+left: 50%; transform: translateX(-50%);
+max-width: 460px; width: 100%;
+display: flex;
+background: rgba(250,250,249,0.92);
+backdrop-filter: blur(16px);
+-webkit-backdrop-filter: blur(16px);
+border-top: 1px solid var(–stone-200);
+z-index: 50;
+padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.nav-btn {
+flex: 1;
+display: flex; flex-direction: column; align-items: center; gap: 3px;
+padding: 10px 0 8px;
+background: none; border: none;
+font-family: inherit; font-size: 0.68rem; font-weight: 500;
+color: var(–stone-400);
+cursor: pointer;
+transition: color 0.15s;
+-webkit-tap-highlight-color: transparent;
+}
+.nav-btn svg { transition: color 0.15s; }
+.nav-btn.active { color: var(–teal-600); }
+.nav-btn.active svg { color: var(–teal-600); }
+
+/* ─── PROFILE VIEW ─── */
+.profile-header {
+display: flex; flex-direction: column; align-items: center;
+padding: 40px 20px 24px;
+text-align: center;
+}
+.profile-name {
+font-family: ‘Fraunces’, serif;
+font-weight: 700;
+font-size: 1.6rem;
+color: var(–stone-900);
+margin-top: 16px;
+letter-spacing: -0.01em;
+}
+.profile-handle {
+font-size: 0.88rem;
+color: var(–stone-400);
+margin-top: 2px;
+}
+.profile-bio {
+font-size: 0.88rem;
+color: var(–stone-600);
+margin-top: 10px;
+line-height: 1.5;
+max-width: 320px;
+}
+.profile-stats {
+display: flex; gap: 32px; margin-top: 18px;
+}
+.stat { text-align: center; }
+.stat-num { font-weight: 700; font-size: 1.1rem; color: var(–stone-900); }
+.stat-label { font-size: 0.72rem; color: var(–stone-400); margin-top: 1px; }
+
+/* ─── CONTACT LINKS ─── */
+.contact-grid {
+padding: 0 20px;
+display: flex; flex-direction: column; gap: 6px;
+}
+.contact-link {
+display: flex; align-items: center; gap: 14px;
+padding: 14px 16px;
+background: #fff;
+border: 1.5px solid var(–stone-200);
+border-radius: var(–radius-sm);
+cursor: pointer;
+transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
+text-decoration: none;
+color: inherit;
+}
+.contact-link:hover {
+border-color: var(–stone-300);
+box-shadow: var(–shadow-md);
+transform: translateY(-1px);
+}
+.contact-link:active { transform: scale(0.985); }
+
+.contact-icon {
+width: 40px; height: 40px;
+border-radius: var(–radius-sm);
+display: flex; align-items: center; justify-content: center;
+flex-shrink: 0;
+font-size: 1.15rem;
+}
+.contact-icon.phone    { background: var(–teal-50); color: var(–teal-600); }
+.contact-icon.whatsapp { background: #ecfdf5; color: var(–green-600); }
+.contact-icon.telegram { background: var(–blue-50); color: var(–blue-500); }
+.contact-icon.email    { background: var(–amber-50); color: var(–amber-600); }
+.contact-icon.snap     { background: #fefce8; color: #eab308; }
+.contact-icon.insta    { background: var(–rose-50); color: var(–rose-500); }
+.contact-icon.signal   { background: var(–blue-50); color: #3a76f0; }
+
+.contact-text { flex: 1; min-width: 0; }
+.contact-label { font-size: 0.78rem; color: var(–stone-400); font-weight: 500; }
+.contact-value { font-size: 0.92rem; color: var(–stone-800); font-weight: 500; margin-top: 1px; }
+
+/* ─── ACTION BTNS ─── */
+.profile-actions {
+display: flex; gap: 10px;
+padding: 0 20px;
+margin-top: 20px;
+}
+.btn {
+flex: 1;
+padding: 12px 16px;
+border-radius: var(–radius-sm);
+font-family: inherit;
+font-size: 0.88rem;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.15s;
+display: flex; align-items: center; justify-content: center; gap: 8px;
+border: none;
+-webkit-tap-highlight-color: transparent;
+}
+.btn-primary {
+background: var(–teal-600);
+color: #fff;
+}
+.btn-primary:hover { background: var(–teal-700); }
+.btn-secondary {
+background: var(–stone-100);
+color: var(–stone-700);
+border: 1.5px solid var(–stone-200);
+}
+.btn-secondary:hover { background: var(–stone-200); }
+
+.btn-sm {
+padding: 8px 14px;
+font-size: 0.8rem;
+border-radius: 8px;
+}
+
+.icon-btn {
+width: 38px; height: 38px;
+border-radius: var(–radius-full);
+display: flex; align-items: center; justify-content: center;
+background: var(–stone-100);
+border: 1.5px solid var(–stone-200);
+cursor: pointer;
+transition: all 0.15s;
+flex-shrink: 0;
+-webkit-tap-highlight-color: transparent;
+padding: 0;
+}
+.icon-btn:hover { background: var(–stone-200); }
+.icon-btn:active { transform: scale(0.92); }
+.icon-btn svg { color: var(–stone-600); }
+
+/* ─── SETTINGS VIEW ─── */
+.settings-section {
+padding: 0 20px;
+margin-top: 8px;
+}
+.settings-group {
+background: #fff;
+border: 1.5px solid var(–stone-200);
+border-radius: var(–radius-sm);
+overflow: hidden;
+margin-bottom: 12px;
+}
+.settings-row {
+display: flex; align-items: center; gap: 14px;
+padding: 14px 16px;
+cursor: pointer;
+transition: background 0.12s;
+border-bottom: 1px solid var(–stone-100);
+position: relative;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row:hover { background: var(–stone-50); }
+.settings-row:active { background: var(–stone-100); }
+.settings-icon {
+width: 34px; height: 34px;
+border-radius: 8px;
+display: flex; align-items: center; justify-content: center;
+flex-shrink: 0;
+font-size: 1rem;
+}
+.settings-icon.teal   { background: var(–teal-50); color: var(–teal-600); }
+.settings-icon.amber  { background: var(–amber-50); color: var(–amber-600); }
+.settings-icon.rose   { background: var(–rose-50); color: var(–rose-500); }
+.settings-icon.blue   { background: var(–blue-50); color: var(–blue-500); }
+.settings-icon.stone  { background: var(–stone-100); color: var(–stone-600); }
+.settings-icon.violet { background: var(–violet-50); color: var(–violet-500); }
+.settings-text { flex: 1; min-width: 0; }
+.settings-label { font-size: 0.9rem; font-weight: 500; color: var(–stone-800); }
+.settings-desc { font-size: 0.76rem; color: var(–stone-400); margin-top: 1px; }
+
+.profile-edit-card {
+background: #fff;
+border: 1.5px solid var(–stone-200);
+border-radius: var(–radius-sm);
+padding: 20px;
+margin: 0 20px;
+display: flex; align-items: center; gap: 16px;
+cursor: pointer;
+transition: border-color 0.2s, box-shadow 0.2s;
+}
+.profile-edit-card:hover { border-color: var(–stone-300); box-shadow: var(–shadow-md); }
+.profile-edit-info { flex: 1; }
+.profile-edit-name { font-weight: 600; font-size: 1rem; color: var(–stone-900); }
+.profile-edit-handle { font-size: 0.82rem; color: var(–stone-400); }
+.profile-edit-label { font-size: 0.72rem; color: var(–teal-600); font-weight: 500; margin-top: 4px; }
+
+/* ─── BACK BTN ─── */
+.back-btn {
+display: flex; align-items: center; gap: 4px;
+background: none; border: none;
+color: var(–teal-600);
+font-family: inherit;
+font-size: 0.88rem;
+font-weight: 500;
+cursor: pointer;
+padding: 0;
+-webkit-tap-highlight-color: transparent;
+}
+
+/* ─── FRIEND BADGE ─── */
+.friend-badge {
+display: inline-flex; align-items: center; gap: 4px;
+padding: 4px 10px;
+border-radius: var(–radius-full);
+font-size: 0.72rem;
+font-weight: 600;
+margin-top: 10px;
+}
+.friend-badge.is-friend { background: var(–teal-100); color: var(–teal-700); }
+.friend-badge.mutual    { background: var(–amber-100); color: var(–amber-600); }
+
+/* ─── QR MODAL ─── */
+.modal-overlay {
+position: fixed; inset: 0;
+background: rgba(12,10,9,0.5);
+z-index: 100;
+display: flex; align-items: center; justify-content: center;
+padding: 20px;
+opacity: 0; pointer-events: none;
+transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+background: #fff;
+border-radius: 20px;
+padding: 36px 32px;
+max-width: 360px;
+width: 100%;
+text-align: center;
+box-shadow: var(–shadow-xl);
+transform: scale(0.92);
+transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.modal-overlay.open .modal { transform: scale(1); }
+.modal h3 {
+font-family: ‘Fraunces’, serif;
+font-size: 1.25rem;
+font-weight: 700;
+color: var(–stone-900);
+margin-bottom: 4px;
+}
+.modal p { font-size: 0.82rem; color: var(–stone-400); margin-bottom: 20px; }
+.qr-box {
+width: 200px; height: 200px;
+margin: 0 auto 20px;
+background: #fff;
+border-radius: var(–radius);
+display: flex; align-items: center; justify-content: center;
+border: 2px solid var(–stone-100);
+}
+.qr-box canvas { border-radius: 8px; }
+.modal .btn { margin-top: 8px; }
+
+/* ─── DISCOVER SECTION ─── */
+.discover-cards {
+padding: 0 20px;
+display: flex; flex-direction: column; gap: 8px;
+}
+.discover-card {
+display: flex; align-items: center; gap: 14px;
+padding: 14px 16px;
+background: #fff;
+border: 1.5px solid var(–stone-200);
+border-radius: var(–radius-sm);
+cursor: pointer;
+transition: border-color 0.2s, box-shadow 0.2s;
+}
+.discover-card:hover {
+border-color: var(–stone-300);
+box-shadow: var(–shadow-md);
+}
+.discover-right { margin-left: auto; flex-shrink: 0; }
+
+/* ─── MUTUAL AVATARS ─── */
+.mutual-stack {
+display: flex;
+margin-top: 4px;
+}
+.mutual-stack .avatar {
+width: 22px; height: 22px;
+border: 2px solid #fff;
+margin-right: -6px;
+font-size: 0.55rem;
+}
+
+/* ─── TAB PILLS ─── */
+.tab-row {
+display: flex; gap: 6px;
+padding: 12px 20px 0;
+}
+.tab-pill {
+padding: 7px 16px;
+border-radius: var(–radius-full);
+font-family: inherit;
+font-size: 0.8rem;
+font-weight: 500;
+cursor: pointer;
+border: 1.5px solid var(–stone-200);
+background: #fff;
+color: var(–stone-500);
+transition: all 0.15s;
+-webkit-tap-highlight-color: transparent;
+}
+.tab-pill.active {
+background: var(–stone-800);
+color: #fff;
+border-color: var(–stone-800);
+}
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+text-align: center;
+padding: 48px 20px;
+color: var(–stone-400);
+}
+.empty-state svg { margin: 0 auto 12px; opacity: 0.4; }
+.empty-state p { font-size: 0.88rem; }
+
+/* ─── TOAST ─── */
+.toast {
+position: fixed;
+bottom: 100px;
+left: 50%; transform: translateX(-50%) translateY(20px);
+background: var(–stone-800);
+color: #fff;
+padding: 10px 20px;
+border-radius: var(–radius-full);
+font-size: 0.82rem;
+font-weight: 500;
+box-shadow: var(–shadow-lg);
+opacity: 0;
+transition: all 0.3s;
+z-index: 200;
+pointer-events: none;
+white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeInUp {
+from { opacity: 0; transform: translateY(8px); }
+to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ─── SCROLLBAR ─── */
+.view::-webkit-scrollbar { width: 0; }
+</style>
+
+</head>
+<body>
+
+<div class="app-shell" id="app"></div>
+<div class="toast" id="toast"></div>
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal">
+    <h3 id="qr-title">Share Profile</h3>
+    <p id="qr-sub">Scan to add me</p>
+    <div class="qr-box"><canvas id="qr-canvas" width="180" height="180"></canvas></div>
+    <button class="btn btn-secondary" onclick="closeQR()" style="width:100%">Done</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  MOCK DATA
+// ═══════════════════════════════════════════
+const USERS = {
+  me: {
+    id: 'me', name: 'Jordan Rivera', handle: '@jordanr',
+    bio: 'Design engineer in Brooklyn. Coffee, climbing, open source.',
+    photo: null,
+    contacts: [
+      { type: 'phone',    label: 'Phone',    value: '+1 (917) 555-0142', icon: '📞' },
+      { type: 'whatsapp', label: 'WhatsApp', value: '+1 (917) 555-0142', icon: '💬' },
+      { type: 'telegram', label: 'Telegram', value: '@jordanr',          icon: '✈️' },
+      { type: 'email',    label: 'Email',    value: 'jordan@hey.com',    icon: '✉️' },
+      { type: 'signal',   label: 'Signal',   value: '+1 (917) 555-0142', icon: '🔒' },
+      { type: 'snap',     label: 'Snapchat', value: '@jrivera',          icon: '👻' },
+    ],
+    friends: ['u1','u2','u3','u4','u5'],
+  },
+  u1: {
+    id: 'u1', name: 'Mika Chen', handle: '@mikac',
+    bio: 'Product designer at Figma. Dog mom. Dim sum enthusiast.',
+    photo: null,
+    contacts: [
+      { type: 'phone',    label: 'Phone',    value: '+1 (415) 555-0198', icon: '📞' },
+      { type: 'whatsapp', label: 'WhatsApp', value: '+1 (415) 555-0198', icon: '💬' },
+      { type: 'telegram', label: 'Telegram', value: '@mikachen',         icon: '✈️' },
+      { type: 'email',    label: 'Email',    value: 'mika@gmail.com',    icon: '✉️' },
+      { type: 'snap',     label: 'Snapchat', value: '@mikac',            icon: '👻' },
+    ],
+    friends: ['me','u2','u3','u6','u7'],
+  },
+  u2: {
+    id: 'u2', name: 'Sam Okafor', handle: '@samokafor',
+    bio: 'Fullstack dev. Lagos → NYC. Building things that matter.',
+    photo: null,
+    contacts: [
+      { type: 'phone',    label: 'Phone',    value: '+1 (646) 555-0234', icon: '📞' },
+      { type: 'whatsapp', label: 'WhatsApp', value: '+234 802 555 0001', icon: '💬' },
+      { type: 'email',    label: 'Email',    value: 'sam@okafor.dev',    icon: '✉️' },
+      { type: 'telegram', label: 'Telegram', value: '@samokafor',        icon: '✈️' },
+    ],
+    friends: ['me','u1','u4','u7','u8'],
+  },
+  u3: {
+    id: 'u3', name: 'Priya Sharma', handle: '@priyash',
+    bio: 'Writer & editor. Tea > coffee. Working on my first novel.',
+    photo: null,
+    contacts: [
+      { type: 'phone',    label: 'Phone',    value: '+91 98765 43210',   icon: '📞' },
+      { type: 'whatsapp', label: 'WhatsApp', value: '+91 98765 43210',   icon: '💬' },
+      { type: 'email',    label: 'Email',    value: 'priya@substack.com',icon: '✉️' },
+      { type: 'signal',   label: 'Signal',   value: '+91 98765 43210',   icon: '🔒' },
+    ],
+    friends: ['me','u1','u6','u9'],
+  },
+  u4: {
+    id: 'u4', name: 'Leo Martínez', handle: '@leom',
+    bio: 'Photographer. Analog film only. Mexico City based.',
+    photo: null,
+    contacts: [
+      { type: 'phone',    label: 'Phone',    value: '+52 55 5555 0789',  icon: '📞' },
+      { type: 'whatsapp', label: 'WhatsApp', value: '+52 55 5555 0789',  icon: '💬' },
+      { type: 'email',    label: 'Email',    value: 'leo@35mm.mx',       icon: '✉️' },
+      { type: 'insta',    label: 'Instagram', value: '@leo.film',        icon: '📷' },
+    ],
+    friends: ['me','u2','u5','u8'],
+  },
+  u5: {
+    id: 'u5', name: 'Noor Al-Rashid', handle: '@noorar',
+    bio: 'UX researcher. Accessibility advocate. Cat person.',
+    photo: null,
+    contacts: [
+      { type: 'email',    label: 'Email',    value: 'noor@proton.me',    icon: '✉️' },
+      { type: 'telegram', label: 'Telegram', value: '@noor_ar',          icon: '✈️' },
+      { type: 'signal',   label: 'Signal',   value: '+1 (312) 555-0456', icon: '🔒' },
+    ],
+    friends: ['me','u4','u9','u10'],
+  },
+  u6: {
+    id: 'u6', name: 'Alex Kim', handle: '@alexk',
+    bio: 'Startup founder. Ex-Google. Endlessly optimistic.',
+    photo: null,
+    contacts: [
+      { type: 'email',    label: 'Email',    value: 'alex@startup.io',   icon: '✉️' },
+      { type: 'phone',    label: 'Phone',    value: '+1 (650) 555-0321', icon: '📞' },
+    ],
+    friends: ['u1','u3','u7'],
+  },
+  u7: {
+    id: 'u7', name: 'Zara Osei', handle: '@zaraosei',
+    bio: 'Data scientist. Marathon runner. Podcast addict.',
+    photo: null,
+    contacts: [
+      { type: 'email',    label: 'Email',    value: 'zara@data.co',      icon: '✉️' },
+      { type: 'whatsapp', label: 'WhatsApp', value: '+44 7700 900123',   icon: '💬' },
+    ],
+    friends: ['u1','u2','u6','u10'],
+  },
+  u8: {
+    id: 'u8', name: 'Tomás Bergström', handle: '@tomasb',
+    bio: 'Sound designer. Synth collector. Stockholm.',
+    photo: null,
+    contacts: [
+      { type: 'email',    label: 'Email',    value: 'tomas@sound.se',    icon: '✉️' },
+      { type: 'telegram', label: 'Telegram', value: '@tomasb_synth',     icon: '✈️' },
+    ],
+    friends: ['u2','u4'],
+  },
+  u9: {
+    id: 'u9', name: 'Maya Johnson', handle: '@mayaj',
+    bio: 'Illustrator & muralist. Big colors, bigger dreams.',
+    photo: null,
+    contacts: [
+      { type: 'email',    label: 'Email',    value: 'maya@art.com',      icon: '✉️' },
+      { type: 'snap',     label: 'Snapchat', value: '@mayaj_art',        icon: '👻' },
+    ],
+    friends: ['u3','u5'],
+  },
+  u10: {
+    id: 'u10', name: 'Ravi Patel', handle: '@ravip',
+    bio: 'Chef. Cookbook author. Spice is life.',
+    photo: null,
+    contacts: [
+      { type: 'phone',    label: 'Phone',    value: '+1 (213) 555-0567', icon: '📞' },
+      { type: 'whatsapp', label: 'WhatsApp', value: '+1 (213) 555-0567', icon: '💬' },
+    ],
+    friends: ['u5','u7'],
+  }
+};
+
+const COLORS = [
+  ['#0d9488','#ccfbf1'], ['#d97706','#fef3c7'], ['#7c3aed','#ede9fe'],
+  ['#db2777','#fce7f3'], ['#2563eb','#dbeafe'], ['#059669','#d1fae5'],
+  ['#dc2626','#fee2e2'], ['#7c2d12','#fed7aa'], ['#4338ca','#e0e7ff'],
+  ['#0369a1','#e0f2fe'],
+];
+
+function userColor(id) {
+  const keys = Object.keys(USERS);
+  const i = keys.indexOf(id);
+  return COLORS[i % COLORS.length];
+}
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let currentView = 'my-profile';
+let viewStack = [];
+let discoverTab = 'suggestions';
+
+const ME = USERS.me;
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+}
+
+function avatarHTML(user, size='') {
+  const cls = size ? `avatar ${size}` : 'avatar';
+  const [fg, bg] = userColor(user.id);
+  return `<div class="${cls}" style="background:${bg};color:${fg}">${initials(user.name)}</div>`;
+}
+
+function getMutuals(userId) {
+  const myFriends = new Set(ME.friends);
+  const theirFriends = USERS[userId]?.friends || [];
+  return theirFriends.filter(f => myFriends.has(f) && f !== 'me');
+}
+
+function isFriend(userId) {
+  return ME.friends.includes(userId);
+}
+
+function getSuggestions() {
+  const myFriends = new Set(ME.friends);
+  const suggestions = new Map();
+  for (const fid of ME.friends) {
+    const friend = USERS[fid];
+    if (!friend) continue;
+    for (const fof of friend.friends) {
+      if (fof === 'me' || myFriends.has(fof)) continue;
+      if (!suggestions.has(fof)) suggestions.set(fof, new Set());
+      suggestions.get(fof).add(fid);
+    }
+  }
+  return [...suggestions.entries()]
+    .sort((a,b) => b[1].size - a[1].size)
+    .map(([id, via]) => ({ user: USERS[id], via: [...via] }));
+}
+
+function chevronSVG() {
+  return `<svg class="chevron-right" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 4l4 4-4 4"/></svg>`;
+}
+
+function searchSVG() {
+  return `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M12 12l4 4"/></svg>`;
+}
+
+// ═══════════════════════════════════════════
+//  RENDERERS
+// ═══════════════════════════════════════════
+function renderContactLinks(user, isOwn) {
+  return user.contacts.map((c, i) => `
+    <a class="contact-link fade-in-up" style="animation-delay:${i * 0.04}s" href="#"
+       onclick="event.preventDefault(); copyContact('${c.value}', '${c.label}')">
+      <div class="contact-icon ${c.type}">${c.icon}</div>
+      <div class="contact-text">
+        <div class="contact-label">${c.label}</div>
+        <div class="contact-value">${c.value}</div>
+      </div>
+      <svg width="16" height="16" fill="none" stroke="var(--stone-300)" stroke-width="2" stroke-linecap="round">
+        <rect x="3" y="5" width="7" height="9" rx="1.5"/>
+        <path d="M6 5V3.5A1.5 1.5 0 0 1 7.5 2h4A1.5 1.5 0 0 1 13 3.5v6a1.5 1.5 0 0 1-1.5 1.5H10"/>
+      </svg>
+    </a>
+  `).join('');
+}
+
+function renderPersonRow(user, extra='', onclick) {
+  const click = onclick || `navigateTo('profile', '${user.id}')`;
+  return `
+    <div class="person-row" onclick="${click}">
+      ${avatarHTML(user)}
+      <div class="person-info">
+        <div class="person-name">${user.name}</div>
+        <div class="person-handle">${user.handle}</div>
+        ${extra}
+      </div>
+      ${chevronSVG()}
+    </div>
+  `;
+}
+
+// ─── MY PROFILE VIEW ───
+function renderMyProfile() {
+  return `
+    <div class="view active" id="view-my-profile">
+      <div class="top-bar">
+        <div class="top-bar-row">
+          <div>
+            <h1>Rolodex</h1>
+            <div class="subtitle">Your connection card</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="icon-btn" onclick="openQR('${ME.id}')" title="Share QR Code">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <rect x="2" y="2" width="5" height="5" rx="1"/><rect x="11" y="2" width="5" height="5" rx="1"/>
+                <rect x="2" y="11" width="5" height="5" rx="1"/><rect x="12" y="12" width="1.5" height="1.5"/>
+                <path d="M16 11h-2v3h3v-1.5M11 16h2"/>
+              </svg>
+            </button>
+            <button class="icon-btn" onclick="viewStack=[];renderApp('settings')" title="Settings">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <circle cx="9" cy="9" r="2.5"/>
+                <path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.7 3.7l1.4 1.4M12.9 12.9l1.4 1.4M3.7 14.3l1.4-1.4M12.9 5.1l1.4-1.4"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="profile-header fade-in-up">
+        ${avatarHTML(ME, 'xl')}
+        <div class="profile-name">${ME.name}</div>
+        <div class="profile-handle">${ME.handle}</div>
+        <div class="profile-bio">${ME.bio}</div>
+        <div class="profile-stats">
+          <div class="stat">
+            <div class="stat-num">${ME.friends.length}</div>
+            <div class="stat-label">Friends</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">${ME.contacts.length}</div>
+            <div class="stat-label">Links</div>
+          </div>
+        </div>
+      </div>
+      <div class="section-label">How to reach me</div>
+      <div class="contact-grid">
+        ${renderContactLinks(ME, true)}
+      </div>
+    </div>
+  `;
+}
+
+// ─── FRIENDS VIEW ───
+function renderFriends(searchTerm='') {
+  const friends = ME.friends.map(id => USERS[id]).filter(Boolean);
+  let filtered = friends;
+  if (searchTerm) {
+    const q = searchTerm.toLowerCase();
+    filtered = friends.filter(u =>
+      u.name.toLowerCase().includes(q) || u.handle.toLowerCase().includes(q)
+    );
+  }
+
+  return `
+    <div class="view active" id="view-friends">
+      <div class="top-bar">
+        <h1>Friends</h1>
+        <div class="subtitle">${ME.friends.length} connections</div>
+        <div class="search-wrap">
+          ${searchSVG()}
+          <input class="search-input" type="text" placeholder="Search friends..."
+            value="${searchTerm}" oninput="renderApp('friends', this.value)">
+        </div>
+      </div>
+      ${filtered.length === 0 ? `
+        <div class="empty-state">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="20" cy="20" r="14"/><path d="M14 27c0-3.3 2.7-6 6-6s6 2.7 6 6M20 18a3 3 0 100-6 3 3 0 000 6z"/></svg>
+          <p>No friends match "${searchTerm}"</p>
+        </div>
+      ` : `
+        <div class="section-label">All friends</div>
+        ${filtered.map(u => renderPersonRow(u)).join('')}
+      `}
+    </div>
+  `;
+}
+
+// ─── DISCOVER VIEW ───
+function renderDiscover(searchTerm='') {
+  const suggestions = getSuggestions();
+  const allPeople = Object.values(USERS).filter(u => u.id !== 'me');
+
+  let searchResults = [];
+  if (searchTerm) {
+    const q = searchTerm.toLowerCase();
+    searchResults = allPeople.filter(u =>
+      u.name.toLowerCase().includes(q) || u.handle.toLowerCase().includes(q)
+    );
+  }
+
+  return `
+    <div class="view active" id="view-discover">
+      <div class="top-bar">
+        <h1>Discover</h1>
+        <div class="subtitle">Find new connections</div>
+        <div class="search-wrap">
+          ${searchSVG()}
+          <input class="search-input" type="text" placeholder="Search by name..."
+            value="${searchTerm}" oninput="renderApp('discover', this.value)">
+        </div>
+      </div>
+      ${searchTerm ? `
+        <div class="section-label">${searchResults.length} result${searchResults.length !== 1 ? 's' : ''}</div>
+        ${searchResults.length === 0 ? `
+          <div class="empty-state">
+            <p>No one found for "${searchTerm}"</p>
+          </div>
+        ` : searchResults.map(u => {
+          const mutuals = getMutuals(u.id);
+          const badge = isFriend(u.id);
+          return renderPersonRow(u,
+            badge ? `<span class="person-mutual">✓ Friends</span>` :
+            mutuals.length ? `<span class="person-mutual">${mutuals.length} mutual${mutuals.length > 1 ? 's' : ''}</span>` : ''
+          );
+        }).join('')}
+      ` : `
+        <div class="tab-row">
+          <button class="tab-pill ${discoverTab === 'suggestions' ? 'active' : ''}" onclick="discoverTab='suggestions';renderApp('discover')">Suggested</button>
+          <button class="tab-pill ${discoverTab === 'fof' ? 'active' : ''}" onclick="discoverTab='fof';renderApp('discover')">Friends of Friends</button>
+        </div>
+        ${discoverTab === 'suggestions' ? `
+          <div class="section-label">People you may know</div>
+          <div class="discover-cards">
+            ${suggestions.map((s, i) => {
+              const mutualNames = s.via.map(id => USERS[id]?.name?.split(' ')[0]).join(', ');
+              return `
+                <div class="discover-card fade-in-up" style="animation-delay:${i * 0.05}s"
+                     onclick="navigateTo('profile','${s.user.id}')">
+                  ${avatarHTML(s.user)}
+                  <div class="person-info">
+                    <div class="person-name">${s.user.name}</div>
+                    <div class="person-handle">${s.user.handle}</div>
+                    <div class="person-mutual">${s.via.length} mutual${s.via.length > 1 ? 's' : ''}: ${mutualNames}</div>
+                  </div>
+                  ${chevronSVG()}
+                </div>
+              `;
+            }).join('')}
+            ${suggestions.length === 0 ? '<div class="empty-state"><p>No suggestions right now</p></div>' : ''}
+          </div>
+        ` : `
+          <div class="section-label">Extended network</div>
+          ${ME.friends.map(fid => {
+            const friend = USERS[fid];
+            if (!friend) return '';
+            const fof = friend.friends.filter(f => f !== 'me' && !ME.friends.includes(f));
+            if (fof.length === 0) return '';
+            return `
+              <div class="section-label" style="padding-top:14px;color:var(--stone-600);text-transform:none;letter-spacing:0;font-size:0.82rem">
+                Via ${friend.name}
+              </div>
+              ${fof.map(id => {
+                const u = USERS[id];
+                if (!u) return '';
+                return renderPersonRow(u, `<span class="person-mutual">Friend of ${friend.name.split(' ')[0]}</span>`);
+              }).join('')}
+            `;
+          }).join('')}
+        `}
+      `}
+    </div>
+  `;
+}
+
+// ─── PROFILE DETAIL VIEW ───
+function renderProfile(userId) {
+  const user = USERS[userId];
+  if (!user) return '<div class="view active"><div class="empty-state"><p>User not found</p></div></div>';
+
+  const mutuals = getMutuals(userId);
+  const isMyFriend = isFriend(userId);
+  const isMe = userId === 'me';
+
+  return `
+    <div class="view active" id="view-profile">
+      <div class="top-bar">
+        <div class="top-bar-row">
+          <button class="back-btn" onclick="goBack()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L5 9l6 5"/></svg>
+            Back
+          </button>
+          <button class="icon-btn" onclick="openQR('${user.id}')" title="Share profile">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <rect x="2" y="2" width="5" height="5" rx="1"/><rect x="11" y="2" width="5" height="5" rx="1"/>
+              <rect x="2" y="11" width="5" height="5" rx="1"/><rect x="12" y="12" width="1.5" height="1.5"/>
+              <path d="M16 11h-2v3h3v-1.5M11 16h2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="profile-header fade-in-up">
+        ${avatarHTML(user, 'xl')}
+        <div class="profile-name">${user.name}</div>
+        <div class="profile-handle">${user.handle}</div>
+        ${isMyFriend ? '<div class="friend-badge is-friend">✓ Friends</div>' :
+          mutuals.length > 0 ? `<div class="friend-badge mutual">${mutuals.length} mutual friend${mutuals.length > 1 ? 's' : ''}</div>` : ''}
+        <div class="profile-bio">${user.bio}</div>
+        <div class="profile-stats">
+          <div class="stat">
+            <div class="stat-num">${user.friends.length}</div>
+            <div class="stat-label">Friends</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">${user.contacts.length}</div>
+            <div class="stat-label">Links</div>
+          </div>
+        </div>
+      </div>
+      ${!isMe && !isMyFriend ? `
+        <div class="profile-actions">
+          <button class="btn btn-primary" onclick="addFriend('${user.id}')">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+            Add Friend
+          </button>
+        </div>
+      ` : ''}
+      <div class="section-label" style="margin-top:8px">Contact</div>
+      <div class="contact-grid">
+        ${renderContactLinks(user, isMe)}
+      </div>
+      ${mutuals.length > 0 ? `
+        <div class="section-label">Mutual Friends</div>
+        ${mutuals.map(mid => {
+          const mu = USERS[mid];
+          return mu ? renderPersonRow(mu) : '';
+        }).join('')}
+      ` : ''}
+      ${user.friends.length > 0 ? `
+        <div class="section-label">Their Friends</div>
+        ${user.friends.filter(f => f !== 'me').slice(0, 6).map(fid => {
+          const fu = USERS[fid];
+          if (!fu) return '';
+          const isMine = isFriend(fid);
+          return renderPersonRow(fu, isMine ? '<span class="person-mutual">✓ Your friend too</span>' : '');
+        }).join('')}
+      ` : ''}
+    </div>
+  `;
+}
+
+// ─── SETTINGS VIEW ───
+function renderSettings() {
+  return `
+    <div class="view active" id="view-settings">
+      <div class="top-bar">
+        <h1>Settings</h1>
+        <div class="subtitle">Profile & preferences</div>
+      </div>
+
+      <div class="section-label">Profile</div>
+      <div class="profile-edit-card" onclick="viewStack=[];renderApp('my-profile')">
+        ${avatarHTML(ME, 'lg')}
+        <div class="profile-edit-info">
+          <div class="profile-edit-name">${ME.name}</div>
+          <div class="profile-edit-handle">${ME.handle}</div>
+          <div class="profile-edit-label">View your card →</div>
+        </div>
+      </div>
+
+      <div class="section-label">Account</div>
+      <div class="settings-section">
+        <div class="settings-group">
+          <div class="settings-row" onclick="showToast('Edit profile coming soon')">
+            <div class="settings-icon teal">✏️</div>
+            <div class="settings-text">
+              <div class="settings-label">Edit Profile</div>
+              <div class="settings-desc">Name, bio, photo, handle</div>
+            </div>
+            ${chevronSVG()}
+          </div>
+          <div class="settings-row" onclick="showToast('Manage contact links coming soon')">
+            <div class="settings-icon blue">🔗</div>
+            <div class="settings-text">
+              <div class="settings-label">Contact Links</div>
+              <div class="settings-desc">${ME.contacts.length} links configured</div>
+            </div>
+            ${chevronSVG()}
+          </div>
+          <div class="settings-row" onclick="openQR('${ME.id}')">
+            <div class="settings-icon violet">📲</div>
+            <div class="settings-text">
+              <div class="settings-label">My QR Code</div>
+              <div class="settings-desc">Share your profile card</div>
+            </div>
+            ${chevronSVG()}
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Data</div>
+      <div class="settings-section">
+        <div class="settings-group">
+          <div class="settings-row" onclick="exportContacts()">
+            <div class="settings-icon amber">📤</div>
+            <div class="settings-text">
+              <div class="settings-label">Export Contacts</div>
+              <div class="settings-desc">Download your friends as .vcf or .csv</div>
+            </div>
+            ${chevronSVG()}
+          </div>
+          <div class="settings-row" onclick="showToast('Import coming soon')">
+            <div class="settings-icon teal">📥</div>
+            <div class="settings-text">
+              <div class="settings-label">Import Contacts</div>
+              <div class="settings-desc">Add from phone, Google, or file</div>
+            </div>
+            ${chevronSVG()}
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Preferences</div>
+      <div class="settings-section">
+        <div class="settings-group">
+          <div class="settings-row" onclick="showToast('Privacy settings coming soon')">
+            <div class="settings-icon rose">🔒</div>
+            <div class="settings-text">
+              <div class="settings-label">Privacy</div>
+              <div class="settings-desc">Who can find you, see your contacts</div>
+            </div>
+            ${chevronSVG()}
+          </div>
+          <div class="settings-row" onclick="showToast('Notification settings coming soon')">
+            <div class="settings-icon stone">🔔</div>
+            <div class="settings-text">
+              <div class="settings-label">Notifications</div>
+              <div class="settings-desc">Friend requests, profile views</div>
+            </div>
+            ${chevronSVG()}
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section" style="margin-top:16px;margin-bottom:40px;text-align:center">
+        <button class="btn btn-secondary" style="width:100%;color:var(--rose-500);border-color:var(--rose-400)" onclick="showToast('Signed out (mock)')">
+          Sign Out
+        </button>
+        <div style="margin-top:16px;font-size:0.72rem;color:var(--stone-400)">
+          Rolodex v0.1.0 · Made with care
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════
+function renderApp(view, searchTerm='') {
+  if (view) currentView = view;
+  const app = document.getElementById('app');
+
+  let html = '';
+  switch (currentView) {
+    case 'my-profile': html = renderMyProfile(); break;
+    case 'friends':    html = renderFriends(searchTerm); break;
+    case 'discover':   html = renderDiscover(searchTerm); break;
+    case 'settings':   html = renderSettings(); break;
+    case 'profile':    html = renderProfile(viewStack[viewStack.length - 1]); break;
+  }
+
+  // Bottom nav
+  html += `
+    <nav class="bottom-nav">
+      <button class="nav-btn ${currentView === 'my-profile' ? 'active' : ''}" onclick="viewStack=[];renderApp('my-profile')">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="11" cy="8" r="4"/><path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/>
+        </svg>
+        Me
+      </button>
+      <button class="nav-btn ${currentView === 'friends' ? 'active' : ''}" onclick="viewStack=[];renderApp('friends')">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="8" cy="7" r="3.5"/><circle cx="16" cy="9" r="2.5"/>
+          <path d="M1 19c0-3.9 3.1-7 7-7 1.6 0 3 .5 4.2 1.4M13 19c0-2.8 1.8-5 4-5s4 2.2 4 5"/>
+        </svg>
+        Friends
+      </button>
+      <button class="nav-btn ${currentView === 'discover' ? 'active' : ''}" onclick="viewStack=[];renderApp('discover')">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7.5"/><path d="M16 16l4 4"/>
+          <circle cx="11" cy="9" r="2.5"/><path d="M7 15c0-2.2 1.8-4 4-4s4 1.8 4 4"/>
+        </svg>
+        Discover
+      </button>
+      <button class="nav-btn ${currentView === 'settings' ? 'active' : ''}" onclick="viewStack=[];renderApp('settings')">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="11" cy="11" r="3"/>
+          <path d="M11 2v3M11 17v3M2 11h3M17 11h3M4.9 4.9l2.1 2.1M15 15l2.1 2.1M4.9 17.1l2.1-2.1M15 7l2.1-2.1"/>
+        </svg>
+        Settings
+      </button>
+    </nav>
+  `;
+
+  app.innerHTML = html;
+
+  // Restore search focus
+  if (searchTerm) {
+    const input = app.querySelector('.search-input');
+    if (input) {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+  }
+}
+
+function navigateTo(view, userId) {
+  if (userId) viewStack.push(userId);
+  renderApp(view);
+}
+
+function goBack() {
+  viewStack.pop();
+  if (viewStack.length > 0) {
+    renderApp('profile');
+  } else {
+    renderApp('friends');
+  }
+}
+
+// ═══════════════════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════════════════
+function copyContact(value, label) {
+  navigator.clipboard?.writeText(value);
+  showToast(`Copied ${label}: ${value}`);
+}
+
+function addFriend(userId) {
+  if (!ME.friends.includes(userId)) {
+    ME.friends.push(userId);
+    USERS[userId]?.friends.push('me');
+    showToast(`Added ${USERS[userId]?.name} as a friend!`);
+    renderApp(currentView);
+  }
+}
+
+function exportContacts() {
+  // Generate mock vCard data
+  let vcf = '';
+  ME.friends.forEach(fid => {
+    const u = USERS[fid];
+    if (!u) return;
+    const [first, ...rest] = u.name.split(' ');
+    const last = rest.join(' ');
+    vcf += `BEGIN:VCARD\nVERSION:3.0\nN:${last};${first}\nFN:${u.name}\n`;
+    u.contacts.forEach(c => {
+      if (c.type === 'email') vcf += `EMAIL:${c.value}\n`;
+      if (c.type === 'phone') vcf += `TEL:${c.value}\n`;
+    });
+    vcf += `END:VCARD\n\n`;
+  });
+  const blob = new Blob([vcf], { type: 'text/vcard' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'rolodex-contacts.vcf';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Exported ${ME.friends.length} contacts as .vcf`);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ═══════════════════════════════════════════
+//  QR CODE (simple generator)
+// ═══════════════════════════════════════════
+function openQR(userId) {
+  const user = USERS[userId];
+  if (!user) return;
+  document.getElementById('qr-title').textContent = user.name;
+  document.getElementById('qr-sub').textContent = `Scan to connect with ${user.name.split(' ')[0]}`;
+  document.getElementById('qr-modal').classList.add('open');
+  drawQR(`https://rolodex.app/${user.handle.replace('@','')}`);
+}
+
+function closeQR() {
+  document.getElementById('qr-modal').classList.remove('open');
+}
+
+document.getElementById('qr-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeQR();
+});
+
+// Minimal QR-like visual (decorative, since real QR needs a library)
+function drawQR(url) {
+  const canvas = document.getElementById('qr-canvas');
+  const ctx = canvas.getContext('2d');
+  const size = 180;
+  const cellSize = 6;
+  const grid = Math.floor(size / cellSize);
+  ctx.clearRect(0, 0, size, size);
+
+  // Seed from URL for consistent pattern
+  let seed = 0;
+  for (let i = 0; i < url.length; i++) seed = ((seed << 5) - seed + url.charCodeAt(i)) | 0;
+  function rand() { seed = (seed * 16807 + 0) % 2147483647; return (seed & 0x7fffffff) / 2147483647; }
+
+  ctx.fillStyle = '#1c1917';
+  // Position markers (QR-like corners)
+  function drawMarker(x, y) {
+    ctx.fillRect(x * cellSize, y * cellSize, 7 * cellSize, 7 * cellSize);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect((x+1) * cellSize, (y+1) * cellSize, 5 * cellSize, 5 * cellSize);
+    ctx.fillStyle = '#1c1917';
+    ctx.fillRect((x+2) * cellSize, (y+2) * cellSize, 3 * cellSize, 3 * cellSize);
+  }
+  drawMarker(1, 1);
+  drawMarker(grid - 9, 1);
+  drawMarker(1, grid - 9);
+
+  // Data cells
+  for (let y = 0; y < grid; y++) {
+    for (let x = 0; x < grid; x++) {
+      // Skip marker areas
+      const inMarker = (x < 9 && y < 9) || (x > grid - 10 && y < 9) || (x < 9 && y > grid - 10);
+      if (inMarker) continue;
+      if (rand() > 0.55) {
+        const r = rand();
+        if (r < 0.3) {
+          ctx.fillStyle = '#0d9488';
+        } else {
+          ctx.fillStyle = '#1c1917';
+        }
+        ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
+      }
+    }
+  }
+
+  // Center logo area
+  const cx = Math.floor(grid / 2);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect((cx - 3) * cellSize, (cx - 3) * cellSize, 6 * cellSize, 6 * cellSize);
+  ctx.fillStyle = '#0d9488';
+  ctx.beginPath();
+  ctx.arc(cx * cellSize, cx * cellSize, cellSize * 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = `bold ${cellSize * 2}px 'DM Sans'`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('R', cx * cellSize, cx * cellSize + 1);
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+renderApp('my-profile');
+</script>
+
+</body>
+</html>

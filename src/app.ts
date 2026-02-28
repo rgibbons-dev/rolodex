@@ -10,6 +10,7 @@ import discoveryRoutes from "./routes/discovery.js";
 import exportRoutes from "./routes/export.js";
 import settingsRoutes from "./routes/settings.js";
 import qrRoutes from "./routes/qr.js";
+import seedRoutes from "./routes/seed.js";
 
 import { rateLimit } from "./lib/rate-limit.js";
 
@@ -37,6 +38,11 @@ app.route("/", discoveryRoutes);
 app.route("/", exportRoutes);
 app.route("/", settingsRoutes);
 app.route("/", qrRoutes);
+app.route("/", seedRoutes);
+
+// --- Serve frontend ---
+app.use("/rolodex.html", serveStatic({ path: "./rolodex.html" }));
+app.use("/rolodex-alpha.html", serveStatic({ path: "./rolodex-alpha.html" }));
 
 // --- Health check ---
 app.get("/health", (c) => c.json({ status: "ok" }));

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../db/index.js";
-import { users, contactLinks } from "../db/schema.js";
+import { users, contactLinks, type ContactLinkType, type ContactLinkVisibility } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { requireAuth, optionalAuth } from "../middleware/auth.js";
@@ -95,6 +95,21 @@ profile.patch("/users/me", requireAuth, async (c) => {
     isPublic = body.isPublic;
   }
 
+  // Validate profile field lengths and types
+  if (displayName !== undefined) {
+    if (typeof displayName !== "string" || displayName.length > 100) {
+      return c.json({ error: "displayName must be a string of at most 100 characters" }, 400);
+    }
+  }
+  if (bio !== undefined) {
+    if (typeof bio !== "string" || bio.length > 500) {
+      return c.json({ error: "bio must be a string of at most 500 characters" }, 400);
+    }
+  }
+  if (isPublic !== undefined && typeof isPublic !== "boolean") {
+    return c.json({ error: "isPublic must be a boolean" }, 400);
+  }
+
   const updates: Record<string, unknown> = {};
   if (displayName !== undefined) updates.displayName = displayName;
   if (bio !== undefined) updates.bio = bio;
@@ -102,7 +117,15 @@ profile.patch("/users/me", requireAuth, async (c) => {
 
   // Handle avatar upload
   if (avatarFile) {
-    const ext = avatarFile.name.split(".").pop() || "jpg";
+    const ALLOWED_EXT = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
+    const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
+    const ext = (avatarFile.name.split(".").pop() || "").toLowerCase();
+    if (!ALLOWED_EXT.has(ext)) {
+      return c.json({ error: "Invalid file type. Allowed: jpg, jpeg, png, gif, webp" }, 400);
+    }
+    if (avatarFile.size > MAX_AVATAR_SIZE) {
+      return c.json({ error: "File too large. Maximum size is 5 MB" }, 400);
+    }
     const key = `avatars/${userId}.${ext}`;
     const buffer = Buffer.from(await avatarFile.arrayBuffer());
     const url = await storage.upload(key, buffer, avatarFile.type);
@@ -167,17 +190,40 @@ profile.put("/users/me/contacts", requireAuth, async (c) => {
     return c.json({ error: "contacts must be an array" }, 400);
   }
 
+  const MAX_CONTACTS = 20;
+  if (body.contacts.length > MAX_CONTACTS) {
+    return c.json({ error: `Maximum ${MAX_CONTACTS} contact links allowed` }, 400);
+  }
+
+  const VALID_TYPES = new Set(["phone", "whatsapp", "telegram", "signal", "email", "snapchat", "instagram", "custom"]);
+  const VALID_VISIBILITY = new Set(["everyone", "friends_only", "friends_of_friends"]);
+
+  for (const contact of body.contacts) {
+    if (!VALID_TYPES.has(contact.type)) {
+      return c.json({ error: `Invalid contact type: ${contact.type}` }, 400);
+    }
+    if (contact.visibility && !VALID_VISIBILITY.has(contact.visibility)) {
+      return c.json({ error: `Invalid visibility: ${contact.visibility}` }, 400);
+    }
+    if (!contact.label || contact.label.length > 50) {
+      return c.json({ error: "Contact label is required and must be at most 50 characters" }, 400);
+    }
+    if (!contact.value || contact.value.length > 200) {
+      return c.json({ error: "Contact value is required and must be at most 200 characters" }, 400);
+    }
+  }
+
   // Delete existing links and insert new ones
   await db.delete(contactLinks).where(eq(contactLinks.userId, userId));
 
   const newLinks = body.contacts.map((contact, i) => ({
     id: uuid(),
     userId,
-    type: contact.type as any,
+    type: contact.type as ContactLinkType,
     label: contact.label,
     value: contact.value,
     sortOrder: contact.sortOrder ?? i,
-    visibility: (contact.visibility as any) ?? "friends_only",
+    visibility: (contact.visibility as ContactLinkVisibility) ?? "friends_only",
   }));
 
   if (newLinks.length > 0) {

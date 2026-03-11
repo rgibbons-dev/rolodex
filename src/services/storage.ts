@@ -6,7 +6,7 @@
 
 import { writeFile, unlink, mkdir } from "fs/promises";
 import { existsSync } from "fs";
-import { join, dirname } from "path";
+import { join, dirname, resolve } from "path";
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || "./uploads";
 
@@ -23,6 +23,11 @@ export const storage = {
    */
   async upload(key: string, data: Buffer, _contentType?: string): Promise<string> {
     const filePath = join(UPLOAD_DIR, key);
+    // Prevent path traversal — resolved path must stay within UPLOAD_DIR
+    const resolvedUploadDir = resolve(UPLOAD_DIR);
+    if (!resolve(filePath).startsWith(resolvedUploadDir)) {
+      throw new Error("Invalid upload path");
+    }
     await ensureDir(dirname(filePath));
     await writeFile(filePath, data);
     // Return a URL path that the API can serve

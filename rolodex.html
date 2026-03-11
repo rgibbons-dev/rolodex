@@ -1133,7 +1133,16 @@ async function openQR(handle) {
     const res = await api(`/qr/${handle}/data-url`);
     if (res.ok) {
       const data = await res.json();
-      document.getElementById('qr-box').innerHTML = `<img src="${data.dataUrl}" alt="QR Code for @${handle}">`;
+      if (data.dataUrl && data.dataUrl.startsWith('data:image/')) {
+        const img = document.createElement('img');
+        img.src = data.dataUrl;
+        img.alt = `QR Code for @${handle}`;
+        const box = document.getElementById('qr-box');
+        box.innerHTML = '';
+        box.appendChild(img);
+      } else {
+        document.getElementById('qr-box').innerHTML = '<p style="color:var(--stone-400);font-size:0.82rem">QR generation failed</p>';
+      }
     } else {
       document.getElementById('qr-box').innerHTML = '<p style="color:var(--stone-400);font-size:0.82rem">QR generation failed</p>';
     }

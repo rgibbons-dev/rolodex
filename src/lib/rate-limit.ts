@@ -17,9 +17,16 @@ export function rateLimit(opts: {
   windowSeconds: number;
 }) {
   return createMiddleware<AppEnv>(async (c, next) => {
-    // Use IP + userId (if authed) as the key
-    const ip = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+    // Use userId (if authed) or IP as the key.
+    // Only trust X-Forwarded-For behind a reverse proxy (TRUST_PROXY env var).
     const userId = c.get("userId");
+    let ip = "unknown";
+    if (process.env.TRUST_PROXY === "1") {
+      const forwarded = c.req.header("x-forwarded-for");
+      ip = forwarded ? forwarded.split(",")[0].trim() : c.req.header("x-real-ip") || "unknown";
+    } else {
+      ip = c.req.header("x-real-ip") || "unknown";
+    }
     const identifier = userId || ip;
     const key = `rl:${opts.prefix}:${identifier}`;
 

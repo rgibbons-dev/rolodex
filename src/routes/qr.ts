@@ -25,10 +25,12 @@ qr.get("/qr/:handle", async (c) => {
 
   const png = await generateProfileQR(handle);
 
+  // Sanitize handle for Content-Disposition filename
+  const safeHandle = handle.replace(/[^a-zA-Z0-9_-]/g, "_");
   return new Response(new Uint8Array(png), {
     headers: {
       "Content-Type": "image/png",
-      "Content-Disposition": `inline; filename="${handle}-qr.png"`,
+      "Content-Disposition": `inline; filename="${safeHandle}-qr.png"`,
     },
   });
 });

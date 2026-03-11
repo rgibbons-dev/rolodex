@@ -27,6 +27,16 @@ auth.post("/register", async (c) => {
     );
   }
 
+  // Email format validation
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+    return c.json({ error: "Invalid email format" }, 400);
+  }
+
+  // Display name length validation
+  if (body.displayName.length > 100) {
+    return c.json({ error: "Display name must be at most 100 characters" }, 400);
+  }
+
   const result = await authService.register({
     handle: body.handle,
     email: body.email,
@@ -38,7 +48,7 @@ auth.post("/register", async (c) => {
   }
 
   // Generate tokens immediately after registration
-  const tokens = authService.generateTokens(result.userId, body.handle);
+  const tokens = await authService.generateTokens(result.userId, body.handle);
   return c.json({ userId: result.userId, ...tokens }, 201);
 });
 
@@ -92,7 +102,7 @@ auth.get("/magic-link/verify", async (c) => {
     return c.json({ error: "Invalid or expired magic link" }, 401);
   }
 
-  const tokens = authService.generateTokens(result.userId, result.handle);
+  const tokens = await authService.generateTokens(result.userId, result.handle);
   return c.json({ userId: result.userId, ...tokens });
 });
 

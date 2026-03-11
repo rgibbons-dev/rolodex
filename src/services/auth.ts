@@ -1,11 +1,15 @@
 import jwt from "jsonwebtoken";
 import { db } from "../db/index.js";
-import { users, magicLinks } from "../db/schema.js";
+import { users, magicLinks, refreshTokens } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { email } from "./email.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
+const JWT_SECRET: string = (() => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error("JWT_SECRET environment variable is required");
+  return secret;
+})();
 const JWT_EXPIRES_IN = "15m";
 const REFRESH_EXPIRES_IN = "7d";
 const MAGIC_LINK_TTL_MINUTES = 15;
@@ -21,7 +25,10 @@ export interface JwtPayload {
   type: "access" | "refresh";
 }
 
-function signToken(payload: Omit<JwtPayload, "type">, type: "access" | "refresh"): string {
+function signToken(
+  payload: Omit<JwtPayload, "type"> & { jti?: string },
+  type: "access" | "refresh"
+): string {
   return jwt.sign(
     { ...payload, type },
     JWT_SECRET,
@@ -30,16 +37,25 @@ function signToken(payload: Omit<JwtPayload, "type">, type: "access" | "refresh"
 }
 
 export const authService = {
-  generateTokens(userId: string, handle: string): TokenPair {
+  async generateTokens(userId: string, handle: string): Promise<TokenPair> {
+    // Create a DB-backed refresh token
+    const refreshId = uuid();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    await db.insert(refreshTokens).values({
+      id: refreshId,
+      userId,
+      expiresAt,
+    });
+
     return {
       accessToken: signToken({ sub: userId, handle }, "access"),
-      refreshToken: signToken({ sub: userId, handle }, "refresh"),
+      refreshToken: signToken({ sub: userId, handle, jti: refreshId }, "refresh"),
     };
   },
 
-  verifyToken(token: string): JwtPayload | null {
+  verifyToken(token: string): (JwtPayload & { jti?: string }) | null {
     try {
-      return jwt.verify(token, JWT_SECRET) as JwtPayload;
+      return jwt.verify(token, JWT_SECRET) as JwtPayload & { jti?: string };
     } catch {
       return null;
     }
@@ -49,6 +65,19 @@ export const authService = {
     const payload = this.verifyToken(refreshToken);
     if (!payload || payload.type !== "refresh") return null;
 
+    // Validate refresh token exists in DB (not revoked)
+    if (payload.jti) {
+      const stored = await db
+        .select()
+        .from(refreshTokens)
+        .where(eq(refreshTokens.id, payload.jti))
+        .limit(1);
+      if (stored.length === 0) return null;
+
+      // Revoke the old refresh token (rotate)
+      await db.delete(refreshTokens).where(eq(refreshTokens.id, payload.jti));
+    }
+
     const user = await db
       .select()
       .from(users)
@@ -57,6 +86,10 @@ export const authService = {
     if (user.length === 0) return null;
 
     return this.generateTokens(user[0].id, user[0].handle);
+  },
+
+  async revokeUserTokens(userId: string): Promise<void> {
+    await db.delete(refreshTokens).where(eq(refreshTokens.userId, userId));
   },
 
   async createMagicLink(emailAddress: string): Promise<string> {

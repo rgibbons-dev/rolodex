@@ -41,12 +41,19 @@ export const friendService = {
     }
 
     const [a, b] = canonicalPair(fromId, toId);
-    await db.insert(friendships).values({
-      userA: a,
-      userB: b,
-      status: "pending",
-      initiatedBy: fromId,
-    });
+    try {
+      await db.insert(friendships).values({
+        userA: a,
+        userB: b,
+        status: "pending",
+        initiatedBy: fromId,
+      });
+    } catch (err: any) {
+      if (err?.code === "SQLITE_CONSTRAINT_UNIQUE") {
+        return { error: "Request already pending" };
+      }
+      throw err;
+    }
 
     return { ok: true };
   },

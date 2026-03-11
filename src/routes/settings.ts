@@ -3,6 +3,7 @@ import { db } from "../db/index.js";
 import { users, friendships, magicLinks } from "../db/schema.js";
 import { eq, or } from "drizzle-orm";
 import { requireAuth } from "../middleware/auth.js";
+import { authService } from "../services/auth.js";
 import type { AppEnv } from "../types.js";
 
 const settings = new Hono<AppEnv>();
@@ -82,6 +83,9 @@ settings.delete("/settings/account", requireAuth, async (c) => {
       400
     );
   }
+
+  // Revoke all refresh tokens before deletion
+  await authService.revokeUserTokens(userId);
 
   // Delete all user data (cascading deletes handle contact_links and notifications)
   // Friendships need manual cleanup since user could be in either column

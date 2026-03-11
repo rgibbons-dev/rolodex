@@ -20,12 +20,19 @@ const app = new Hono<AppEnv>();
 
 // --- Global middleware ---
 app.use("*", logger());
-app.use("*", cors());
+app.use("*", cors({
+  origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+}));
 
 // --- Rate limiting on sensitive endpoints ---
 app.use("/discover/search", rateLimit({ prefix: "search", max: 30, windowSeconds: 60 }));
 app.use("/friends/request/*", rateLimit({ prefix: "friend_req", max: 20, windowSeconds: 60 }));
 app.use("/auth/*", rateLimit({ prefix: "auth", max: 10, windowSeconds: 60 }));
+app.use("/seed", rateLimit({ prefix: "seed", max: 5, windowSeconds: 60 }));
+app.use("/export/*", rateLimit({ prefix: "export", max: 20, windowSeconds: 60 }));
+app.use("/qr/*", rateLimit({ prefix: "qr", max: 30, windowSeconds: 60 }));
+app.use("/users/me", rateLimit({ prefix: "profile_update", max: 20, windowSeconds: 60 }));
+app.use("/settings/account", rateLimit({ prefix: "account_delete", max: 5, windowSeconds: 60 }));
 
 // --- Serve uploaded files (avatar stubs) ---
 app.use("/uploads/*", serveStatic({ root: "./" }));

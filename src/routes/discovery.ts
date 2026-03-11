@@ -14,7 +14,7 @@ const discovery = new Hono<AppEnv>();
  */
 discovery.get("/discover/suggestions", requireAuth, async (c) => {
   const userId: string = c.get("userId");
-  const limit = parseInt(c.req.query("limit") || "20", 10);
+  const limit = Math.min(parseInt(c.req.query("limit") || "20", 10), 100);
 
   // Get all friend IDs
   const friendIds = await friendService.getAllFriendIds(userId);
@@ -78,7 +78,7 @@ discovery.get("/discover/suggestions", requireAuth, async (c) => {
  */
 discovery.get("/discover/search", requireAuth, async (c) => {
   const query = c.req.query("q") || "";
-  const limit = parseInt(c.req.query("limit") || "20", 10);
+  const limit = Math.min(parseInt(c.req.query("limit") || "20", 10), 100);
   const offset = parseInt(c.req.query("offset") || "0", 10);
 
   if (query.length < 2) {

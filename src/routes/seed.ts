@@ -13,6 +13,10 @@ const seed = new Hono();
  * Idempotent — skips if data already exists.
  */
 seed.post("/seed", async (c) => {
+  if (process.env.NODE_ENV === "production") {
+    return c.json({ error: "Seed is disabled in production" }, 403);
+  }
+
   // Check if data already exists
   const existing = await db.select().from(users).limit(1);
   if (existing.length > 0) {
@@ -23,7 +27,7 @@ seed.post("/seed", async (c) => {
       .where(eq(users.handle, "jordanr"))
       .limit(1);
     if (me.length > 0) {
-      const tokens = authService.generateTokens(me[0].id, me[0].handle);
+      const tokens = await authService.generateTokens(me[0].id, me[0].handle);
       return c.json({ message: "Already seeded", userId: me[0].id, ...tokens });
     }
     return c.json({ message: "Already seeded" });
@@ -176,7 +180,7 @@ seed.post("/seed", async (c) => {
 
   // Return tokens for "jordanr" so the frontend can log in immediately
   const meId = userIds["jordanr"];
-  const tokens = authService.generateTokens(meId, "jordanr");
+  const tokens = await authService.generateTokens(meId, "jordanr");
 
   return c.json({
     message: "Seeded 11 users with contacts and friendships",

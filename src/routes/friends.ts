@@ -14,7 +14,7 @@ const friends = new Hono<AppEnv>();
  */
 friends.get("/users/me/friends", requireAuth, async (c) => {
   const userId: string = c.get("userId");
-  const limit = parseInt(c.req.query("limit") || "20", 10);
+  const limit = Math.min(parseInt(c.req.query("limit") || "20", 10), 100);
   const offset = parseInt(c.req.query("offset") || "0", 10);
 
   const result = await friendService.listFriends(userId, { limit, offset });
@@ -129,7 +129,7 @@ friends.delete("/friends/:userId", requireAuth, async (c) => {
 friends.get("/users/:handle/friends", optionalAuth, async (c) => {
   const handle = c.req.param("handle");
   const viewerId: string | undefined = c.get("userId");
-  const limit = parseInt(c.req.query("limit") || "20", 10);
+  const limit = Math.min(parseInt(c.req.query("limit") || "20", 10), 100);
   const offset = parseInt(c.req.query("offset") || "0", 10);
 
   const user = await db
@@ -184,7 +184,7 @@ friends.get("/users/:handle/mutuals", requireAuth, async (c) => {
  */
 friends.get("/users/me/notifications", requireAuth, async (c) => {
   const userId: string = c.get("userId");
-  const limit = parseInt(c.req.query("limit") || "20", 10);
+  const limit = Math.min(parseInt(c.req.query("limit") || "20", 10), 100);
   const offset = parseInt(c.req.query("offset") || "0", 10);
 
   const items = await notificationService.listForUser(userId, { limit, offset });

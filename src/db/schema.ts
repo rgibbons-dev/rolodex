@@ -99,6 +99,21 @@ export const magicLinks = sqliteTable("magic_links", {
     .default(sql`(datetime('now'))`),
 });
 
+export const refreshTokens = sqliteTable(
+  "refresh_tokens",
+  {
+    id: text("id").primaryKey(), // UUID — also the jti claim in the JWT
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expiresAt: text("expires_at").notNull(),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
+  },
+  (table) => [index("refresh_tokens_user_idx").on(table.userId)]
+);
+
 export const notifications = sqliteTable(
   "notifications",
   {

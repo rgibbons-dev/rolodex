@@ -1,4 +1,4 @@
-import { Component, createResource, For, Show } from "solid-js";
+import { Component, createResource, createSignal, For, Show } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import { api } from "../api/client";
 import type { Notification } from "../types";
@@ -13,6 +13,7 @@ async function loadNotifications(): Promise<{ notifications: Notification[]; unr
 export const NotificationsPage: Component = () => {
   const navigate = useNavigate();
   const [data, { refetch }] = createResource(loadNotifications);
+  const [accepted, setAccepted] = createSignal<Set<string>>(new Set());
 
   async function markRead(id: string) {
     await api(`/users/me/notifications/${id}/read`, { method: "POST" });
@@ -23,6 +24,19 @@ export const NotificationsPage: Component = () => {
     await api("/users/me/notifications/read-all", { method: "POST" });
     refetch();
     showToast("All marked read");
+  }
+
+  async function acceptRequest(fromUserId: string, notifId: string) {
+    const res = await api(`/friends/accept/${fromUserId}`, { method: "POST" });
+    if (res.ok) {
+      setAccepted((prev) => { const next = new Set(prev); next.add(notifId); return next; });
+      await api(`/users/me/notifications/${notifId}/read`, { method: "POST" });
+      refetch();
+      showToast("Friend request accepted!");
+    } else {
+      const d = await res.json();
+      showToast(d.error || "Failed to accept");
+    }
   }
 
   return (
@@ -46,15 +60,26 @@ export const NotificationsPage: Component = () => {
             {(n) => (
               <div
                 class={`settings-row${n.read ? "" : " unread"}`}
-                onClick={() => !n.read && markRead(n.id)}
+                onClick={() => !n.read && n.type !== "friend_request" && markRead(n.id)}
               >
-                <div>
+                <div style={{ flex: "1" }}>
                   <div style={{ "font-weight": n.read ? "400" : "600" }}>{n.message}</div>
                   <div style={{ "font-size": "0.72rem", color: "var(--stone-400)" }}>
                     {new Date(n.createdAt).toLocaleDateString()}
                   </div>
                 </div>
-                <Show when={!n.read}>
+                <Show when={n.type === "friend_request" && n.fromUserId && !accepted().has(n.id)}>
+                  <button
+                    class="btn btn-sm btn-primary"
+                    onClick={(e) => { e.stopPropagation(); acceptRequest(n.fromUserId!, n.id); }}
+                  >
+                    Accept
+                  </button>
+                </Show>
+                <Show when={n.type === "friend_request" && accepted().has(n.id)}>
+                  <span style={{ "font-size": "0.78rem", color: "var(--green-600)" }}>Accepted</span>
+                </Show>
+                <Show when={!n.read && n.type !== "friend_request"}>
                   <span class="notif-dot" />
                 </Show>
               </div>

@@ -70,22 +70,6 @@ export const AuthPage: Component = () => {
     setLoading(false);
   }
 
-  async function doSeed() {
-    setError("");
-    setLoading(true);
-    try {
-      const res = await api("/seed", { method: "POST" });
-      const data = await res.json();
-      if (res.ok || res.status === 200) {
-        saveTokens({ accessToken: data.accessToken, refreshToken: data.refreshToken });
-        navigate("/", { replace: true });
-      } else {
-        setError(data.error || "Seed failed");
-      }
-    } catch { setError("Network error"); }
-    setLoading(false);
-  }
-
   return (
     <div class="auth-screen">
       <div class="auth-card">
@@ -164,11 +148,6 @@ export const AuthPage: Component = () => {
         </Show>
 
         <Show when={error()}><p class="form-error">{error()}</p></Show>
-
-        <hr class="auth-divider" />
-        <button class="btn btn-secondary" onClick={doSeed} disabled={loading()}>
-          Load demo data
-        </button>
       </div>
     </div>
   );

@@ -26,7 +26,8 @@ export const CircleDetailPage: Component = () => {
   async function loadDetail(): Promise<CircleDetail | null> {
     const res = await api(`/users/me/circles/${params.id}`);
     if (!res.ok) return null;
-    return res.json();
+    const data = await res.json();
+    return data.circle;
   }
 
   const [circle, { refetch }] = createResource(() => params.id, loadDetail);
@@ -107,7 +108,7 @@ export const CircleDetailPage: Component = () => {
   async function submitContacts() {
     const res = await api(`/users/me/circles/${params.id}/contacts`, {
       method: "PUT",
-      body: { contactLinkIds: Array.from(selectedContacts()) },
+      body: { contactIds: Array.from(selectedContacts()) },
     });
     if (res.ok) {
       setShowContactsModal(false);

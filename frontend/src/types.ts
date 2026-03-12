@@ -57,6 +57,7 @@ export interface Notification {
   message: string;
   read: boolean;
   createdAt: string;
+  fromUserId?: string | null;
   fromUser?: { handle: string; displayName: string; avatarUrl: string | null };
 }
 

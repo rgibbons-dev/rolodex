@@ -10,7 +10,6 @@ import discoveryRoutes from "./routes/discovery.js";
 import exportRoutes from "./routes/export.js";
 import settingsRoutes from "./routes/settings.js";
 import qrRoutes from "./routes/qr.js";
-import seedRoutes from "./routes/seed.js";
 import circlesRoutes from "./routes/circles.js";
 
 import { rateLimit } from "./lib/rate-limit.js";
@@ -29,7 +28,6 @@ app.use("*", cors({
 app.use("/discover/search", rateLimit({ prefix: "search", max: 30, windowSeconds: 60 }));
 app.use("/friends/request/*", rateLimit({ prefix: "friend_req", max: 20, windowSeconds: 60 }));
 app.use("/auth/*", rateLimit({ prefix: "auth", max: 10, windowSeconds: 60 }));
-app.use("/seed", rateLimit({ prefix: "seed", max: 5, windowSeconds: 60 }));
 app.use("/export/*", rateLimit({ prefix: "export", max: 20, windowSeconds: 60 }));
 app.use("/qr/*", rateLimit({ prefix: "qr", max: 30, windowSeconds: 60 }));
 app.use("/users/me", rateLimit({ prefix: "profile_update", max: 20, windowSeconds: 60 }));
@@ -46,7 +44,6 @@ app.route("/", discoveryRoutes);
 app.route("/", exportRoutes);
 app.route("/", settingsRoutes);
 app.route("/", qrRoutes);
-app.route("/", seedRoutes);
 app.route("/", circlesRoutes);
 
 // --- Serve frontend (legacy) ---
@@ -60,7 +57,7 @@ app.use("/assets/*", serveStatic({ root: "./frontend/dist" }));
 app.get("/health", (c) => c.json({ status: "ok" }));
 
 // --- SPA fallback: serve index.html for client-side routes (skip API paths) ---
-const apiPrefixes = ["/auth", "/users", "/friends", "/discover", "/export", "/settings", "/qr", "/seed", "/health", "/uploads"];
+const apiPrefixes = ["/auth", "/users", "/friends", "/discover", "/export", "/settings", "/qr", "/health", "/uploads"];
 const spaFallback = serveStatic({ path: "./frontend/dist/index.html" });
 app.use("*", async (c, next) => {
   const path = c.req.path;
@@ -73,7 +70,7 @@ app.use("*", async (c, next) => {
 // --- 404 fallback (only for API routes that didn't match) ---
 app.notFound((c) => {
   const accept = c.req.header("accept") || "";
-  if (accept.includes("application/json") || c.req.path.startsWith("/auth") || c.req.path.startsWith("/users") || c.req.path.startsWith("/friends") || c.req.path.startsWith("/discover") || c.req.path.startsWith("/export") || c.req.path.startsWith("/settings") || c.req.path.startsWith("/qr") || c.req.path.startsWith("/seed")) {
+  if (accept.includes("application/json") || c.req.path.startsWith("/auth") || c.req.path.startsWith("/users") || c.req.path.startsWith("/friends") || c.req.path.startsWith("/discover") || c.req.path.startsWith("/export") || c.req.path.startsWith("/settings") || c.req.path.startsWith("/qr")) {
     return c.json({ error: "Not found" }, 404);
   }
   return c.json({ error: "Not found" }, 404);

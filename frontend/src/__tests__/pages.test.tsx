@@ -37,9 +37,9 @@ describe("AuthPage", () => {
     expect(screen.getByPlaceholderText("yourhandle")).toBeInTheDocument();
   });
 
-  it("shows demo login button", () => {
+  it("shows send magic link button", () => {
     renderPage(AuthPage, "/auth");
-    expect(screen.getByText(/demo data/i)).toBeInTheDocument();
+    expect(screen.getByText("Send Magic Link")).toBeInTheDocument();
   });
 });
 

@@ -14,7 +14,6 @@ export default defineConfig({
       "/import": "http://localhost:3000",
       "/settings": "http://localhost:3000",
       "/qr": "http://localhost:3000",
-      "/seed": "http://localhost:3000",
       "/uploads": "http://localhost:3000",
     },
   },

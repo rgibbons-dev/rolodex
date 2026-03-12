@@ -58,6 +58,7 @@ export const contactLinks = sqliteTable(
     value: text("value").notNull(),
     sortOrder: integer("sort_order").notNull().default(0),
     visibility: text("visibility").notNull().$type<ContactLinkVisibility>().default("friends_only"),
+    sharedByDefault: integer("shared_by_default", { mode: "boolean" }).notNull().default(true),
   },
   (table) => [index("contact_links_user_idx").on(table.userId)]
 );
@@ -112,6 +113,59 @@ export const refreshTokens = sqliteTable(
       .default(sql`(datetime('now'))`),
   },
   (table) => [index("refresh_tokens_user_idx").on(table.userId)]
+);
+
+export const circles = sqliteTable(
+  "circles",
+  {
+    id: text("id").primaryKey(), // UUID
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description").default(""),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
+  },
+  (table) => [index("circles_user_idx").on(table.userId)]
+);
+
+export const circleMembers = sqliteTable(
+  "circle_members",
+  {
+    circleId: text("circle_id")
+      .notNull()
+      .references(() => circles.id, { onDelete: "cascade" }),
+    friendId: text("friend_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    addedAt: text("added_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
+  },
+  (table) => [
+    uniqueIndex("circle_members_pair_idx").on(table.circleId, table.friendId),
+    index("circle_members_circle_idx").on(table.circleId),
+    index("circle_members_friend_idx").on(table.friendId),
+  ]
+);
+
+export const circleContactGrants = sqliteTable(
+  "circle_contact_grants",
+  {
+    circleId: text("circle_id")
+      .notNull()
+      .references(() => circles.id, { onDelete: "cascade" }),
+    contactLinkId: text("contact_link_id")
+      .notNull()
+      .references(() => contactLinks.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    uniqueIndex("circle_contact_grants_pair_idx").on(table.circleId, table.contactLinkId),
+    index("circle_contact_grants_circle_idx").on(table.circleId),
+    index("circle_contact_grants_contact_idx").on(table.contactLinkId),
+  ]
 );
 
 export const notifications = sqliteTable(

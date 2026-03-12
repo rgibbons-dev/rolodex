@@ -183,6 +183,7 @@ profile.put("/users/me/contacts", requireAuth, async (c) => {
       value: string;
       sortOrder?: number;
       visibility?: string;
+      sharedByDefault?: boolean;
     }>;
   }>();
 
@@ -224,6 +225,7 @@ profile.put("/users/me/contacts", requireAuth, async (c) => {
     value: contact.value,
     sortOrder: contact.sortOrder ?? i,
     visibility: (contact.visibility as ContactLinkVisibility) ?? "friends_only",
+    sharedByDefault: contact.sharedByDefault ?? true,
   }));
 
   if (newLinks.length > 0) {
@@ -231,6 +233,158 @@ profile.put("/users/me/contacts", requireAuth, async (c) => {
   }
 
   return c.json({ contacts: newLinks });
+});
+
+/**
+ * POST /users/me/contacts — Add a single contact method.
+ */
+profile.post("/users/me/contacts", requireAuth, async (c) => {
+  const userId: string = c.get("userId");
+  const body = await c.req.json<{
+    type?: string;
+    label?: string;
+    value?: string;
+    visibility?: string;
+    sharedByDefault?: boolean;
+    sortOrder?: number;
+  }>();
+
+  const VALID_TYPES = new Set(["phone", "whatsapp", "telegram", "signal", "email", "snapchat", "instagram", "custom"]);
+  const VALID_VISIBILITY = new Set(["everyone", "friends_only", "friends_of_friends"]);
+
+  if (!body.type || !VALID_TYPES.has(body.type)) {
+    return c.json({ error: `Invalid or missing contact type` }, 400);
+  }
+  if (!body.label || typeof body.label !== "string" || body.label.length > 50) {
+    return c.json({ error: "Contact label is required and must be at most 50 characters" }, 400);
+  }
+  if (!body.value || typeof body.value !== "string" || body.value.length > 200) {
+    return c.json({ error: "Contact value is required and must be at most 200 characters" }, 400);
+  }
+  if (body.visibility && !VALID_VISIBILITY.has(body.visibility)) {
+    return c.json({ error: `Invalid visibility: ${body.visibility}` }, 400);
+  }
+
+  // Enforce max 20 contacts
+  const existing = await db
+    .select()
+    .from(contactLinks)
+    .where(eq(contactLinks.userId, userId));
+  if (existing.length >= 20) {
+    return c.json({ error: "Maximum 20 contact links allowed" }, 400);
+  }
+
+  // Auto-assign sortOrder
+  const maxSort = existing.reduce((max, l) => Math.max(max, l.sortOrder), -1);
+
+  const id = uuid();
+  const newLink = {
+    id,
+    userId,
+    type: body.type as ContactLinkType,
+    label: body.label,
+    value: body.value,
+    sortOrder: body.sortOrder ?? maxSort + 1,
+    visibility: (body.visibility as ContactLinkVisibility) ?? "friends_only",
+    sharedByDefault: body.sharedByDefault ?? true,
+  };
+
+  await db.insert(contactLinks).values(newLink);
+
+  return c.json({ contact: newLink }, 201);
+});
+
+/**
+ * PATCH /users/me/contacts/:id — Update a single contact method.
+ */
+profile.patch("/users/me/contacts/:id", requireAuth, async (c) => {
+  const userId: string = c.get("userId");
+  const contactId = c.req.param("id");
+  const body = await c.req.json<{
+    label?: string;
+    value?: string;
+    visibility?: string;
+    sharedByDefault?: boolean;
+    sortOrder?: number;
+  }>();
+
+  const VALID_VISIBILITY = new Set(["everyone", "friends_only", "friends_of_friends"]);
+
+  // Find the contact link owned by this user
+  const rows = await db
+    .select()
+    .from(contactLinks)
+    .where(eq(contactLinks.id, contactId))
+    .limit(1);
+
+  if (rows.length === 0 || rows[0].userId !== userId) {
+    return c.json({ error: "Contact not found" }, 404);
+  }
+
+  const updates: Record<string, unknown> = {};
+  if (body.label !== undefined) {
+    if (typeof body.label !== "string" || body.label.length > 50) {
+      return c.json({ error: "Label must be at most 50 characters" }, 400);
+    }
+    updates.label = body.label;
+  }
+  if (body.value !== undefined) {
+    if (typeof body.value !== "string" || body.value.length > 200) {
+      return c.json({ error: "Value must be at most 200 characters" }, 400);
+    }
+    updates.value = body.value;
+  }
+  if (body.visibility !== undefined) {
+    if (!VALID_VISIBILITY.has(body.visibility)) {
+      return c.json({ error: `Invalid visibility: ${body.visibility}` }, 400);
+    }
+    updates.visibility = body.visibility;
+  }
+  if (body.sharedByDefault !== undefined) {
+    if (typeof body.sharedByDefault !== "boolean") {
+      return c.json({ error: "sharedByDefault must be a boolean" }, 400);
+    }
+    updates.sharedByDefault = body.sharedByDefault;
+  }
+  if (body.sortOrder !== undefined) {
+    updates.sortOrder = body.sortOrder;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return c.json({ error: "No fields to update" }, 400);
+  }
+
+  await db.update(contactLinks).set(updates).where(eq(contactLinks.id, contactId));
+
+  const updated = await db
+    .select()
+    .from(contactLinks)
+    .where(eq(contactLinks.id, contactId))
+    .limit(1);
+
+  return c.json({ contact: updated[0] });
+});
+
+/**
+ * DELETE /users/me/contacts/:id — Delete a single contact method.
+ */
+profile.delete("/users/me/contacts/:id", requireAuth, async (c) => {
+  const userId: string = c.get("userId");
+  const contactId = c.req.param("id");
+
+  const rows = await db
+    .select()
+    .from(contactLinks)
+    .where(eq(contactLinks.id, contactId))
+    .limit(1);
+
+  if (rows.length === 0 || rows[0].userId !== userId) {
+    return c.json({ error: "Contact not found" }, 404);
+  }
+
+  await db.delete(contactLinks).where(eq(contactLinks.id, contactId));
+
+  return c.json({ ok: true });
 });
 
 export default profile;

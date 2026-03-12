@@ -11,6 +11,7 @@ import exportRoutes from "./routes/export.js";
 import settingsRoutes from "./routes/settings.js";
 import qrRoutes from "./routes/qr.js";
 import seedRoutes from "./routes/seed.js";
+import circlesRoutes from "./routes/circles.js";
 
 import { rateLimit } from "./lib/rate-limit.js";
 
@@ -46,6 +47,7 @@ app.route("/", exportRoutes);
 app.route("/", settingsRoutes);
 app.route("/", qrRoutes);
 app.route("/", seedRoutes);
+app.route("/", circlesRoutes);
 
 // --- Serve frontend ---
 app.use("/rolodex.html", serveStatic({ path: "./rolodex.html" }));

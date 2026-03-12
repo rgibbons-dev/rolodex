@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../db/index.js";
-import { users, contactLinks, friendships } from "../db/schema.js";
+import { users, contactLinks, friendships, circles, circleMembers, circleContactGrants } from "../db/schema.js";
 import { v4 as uuid } from "uuid";
 import { authService } from "../services/auth.js";
 import { eq, sql } from "drizzle-orm";
@@ -56,13 +56,15 @@ seed.post("/seed", async (c) => {
   }
 
   // Contact links for each user
-  const contactDefs: Record<string, Array<{ type: string; label: string; value: string; visibility: string }>> = {
+  // sharedByDefault: true (default) = shared with all friends immediately
+  // sharedByDefault: false = opt-in only, shared via circles
+  const contactDefs: Record<string, Array<{ type: string; label: string; value: string; visibility: string; sharedByDefault?: boolean }>> = {
     jordanr: [
       { type: "phone", label: "Phone", value: "+1 (917) 555-0142", visibility: "friends_only" },
       { type: "whatsapp", label: "WhatsApp", value: "+1 (917) 555-0142", visibility: "friends_only" },
       { type: "telegram", label: "Telegram", value: "@jordanr", visibility: "everyone" },
       { type: "email", label: "Email", value: "jordan@hey.com", visibility: "everyone" },
-      { type: "signal", label: "Signal", value: "+1 (917) 555-0142", visibility: "friends_only" },
+      { type: "signal", label: "Signal", value: "+1 (917) 555-0142", visibility: "friends_only", sharedByDefault: false },
       { type: "snapchat", label: "Snapchat", value: "@jrivera", visibility: "friends_of_friends" },
     ],
     mikac: [
@@ -93,7 +95,7 @@ seed.post("/seed", async (c) => {
     noorar: [
       { type: "email", label: "Email", value: "noor@proton.me", visibility: "everyone" },
       { type: "telegram", label: "Telegram", value: "@noor_ar", visibility: "everyone" },
-      { type: "signal", label: "Signal", value: "+1 (312) 555-0456", visibility: "friends_only" },
+      { type: "signal", label: "Signal", value: "+1 (312) 555-0456", visibility: "friends_only", sharedByDefault: false },
     ],
     alexk: [
       { type: "email", label: "Email", value: "alex@startup.io", visibility: "everyone" },
@@ -117,16 +119,22 @@ seed.post("/seed", async (c) => {
     ],
   };
 
+  // Track contact link IDs for circle grants
+  const contactLinkIds: Record<string, Record<string, string>> = {};
   for (const [handle, links] of Object.entries(contactDefs)) {
+    contactLinkIds[handle] = {};
     for (let i = 0; i < links.length; i++) {
+      const id = uuid();
+      contactLinkIds[handle][links[i].type + "_" + i] = id;
       await db.insert(contactLinks).values({
-        id: uuid(),
+        id,
         userId: userIds[handle],
         type: links[i].type as any,
         label: links[i].label,
         value: links[i].value,
         sortOrder: i,
         visibility: links[i].visibility as any,
+        sharedByDefault: links[i].sharedByDefault ?? true,
       });
     }
   }
@@ -178,12 +186,66 @@ seed.post("/seed", async (c) => {
     });
   }
 
+  // Circles — demo access control groups
+  // Jordan's "Inner Circle" — mikac and priyash can see Signal
+  const jordanInnerCircleId = uuid();
+  await db.insert(circles).values({
+    id: jordanInnerCircleId,
+    userId: userIds["jordanr"],
+    name: "Inner Circle",
+    description: "My closest friends — they get the private number",
+  });
+  await db.insert(circleMembers).values([
+    { circleId: jordanInnerCircleId, friendId: userIds["mikac"] },
+    { circleId: jordanInnerCircleId, friendId: userIds["priyash"] },
+  ]);
+  // Grant Signal access to Inner Circle
+  const jordanSignalId = contactLinkIds["jordanr"]["signal_4"];
+  if (jordanSignalId) {
+    await db.insert(circleContactGrants).values({
+      circleId: jordanInnerCircleId,
+      contactLinkId: jordanSignalId,
+    });
+  }
+
+  // Jordan's "Climbing Crew" — leom and samokafor
+  const jordanClimbingId = uuid();
+  await db.insert(circles).values({
+    id: jordanClimbingId,
+    userId: userIds["jordanr"],
+    name: "Climbing Crew",
+    description: "Weekend bouldering partners",
+  });
+  await db.insert(circleMembers).values([
+    { circleId: jordanClimbingId, friendId: userIds["leom"] },
+    { circleId: jordanClimbingId, friendId: userIds["samokafor"] },
+  ]);
+
+  // Noor's "Trusted" — jordanr can see Signal
+  const noorTrustedId = uuid();
+  await db.insert(circles).values({
+    id: noorTrustedId,
+    userId: userIds["noorar"],
+    name: "Trusted",
+    description: "People who have my Signal",
+  });
+  await db.insert(circleMembers).values([
+    { circleId: noorTrustedId, friendId: userIds["jordanr"] },
+  ]);
+  const noorSignalId = contactLinkIds["noorar"]["signal_2"];
+  if (noorSignalId) {
+    await db.insert(circleContactGrants).values({
+      circleId: noorTrustedId,
+      contactLinkId: noorSignalId,
+    });
+  }
+
   // Return tokens for "jordanr" so the frontend can log in immediately
   const meId = userIds["jordanr"];
   const tokens = await authService.generateTokens(meId, "jordanr");
 
   return c.json({
-    message: "Seeded 11 users with contacts and friendships",
+    message: "Seeded 11 users with contacts, friendships, and circles",
     userId: meId,
     handle: "jordanr",
     ...tokens,

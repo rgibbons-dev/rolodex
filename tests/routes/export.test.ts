@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { app, cleanDB, createTestUser, makeFriends } from "../helpers.js";
 import { db } from "../../src/db/index.js";
-import { contactLinks } from "../../src/db/schema.js";
+import { contactLinks, circles, circleMembers, circleContactGrants } from "../../src/db/schema.js";
 import { v4 as uuid } from "uuid";
 
 function request(method: string, path: string, options: {
@@ -63,6 +63,65 @@ describe("export routes", () => {
       expect(text).toContain("BEGIN:VCARD");
       expect(text).toContain("FN:Bob Jones");
       expect(text).toContain("EMAIL");
+    });
+
+    it("excludes opt-in contacts from VCF when viewer lacks circle access", async () => {
+      const alice = await createTestUser({ handle: "alice" });
+      const bob = await createTestUser({ handle: "bob", displayName: "Bob" });
+      await makeFriends(alice.id, bob.id);
+
+      // Bob has a public contact and an opt-in contact
+      await db.insert(contactLinks).values({
+        id: uuid(),
+        userId: bob.id,
+        type: "email",
+        label: "Email",
+        value: "bob@public.com",
+        visibility: "friends_only",
+        sharedByDefault: true,
+      });
+      const optInId = uuid();
+      await db.insert(contactLinks).values({
+        id: optInId,
+        userId: bob.id,
+        type: "phone",
+        label: "Secret Phone",
+        value: "+9999999999",
+        visibility: "friends_only",
+        sharedByDefault: false,
+      });
+
+      const res = await request("GET", "/export/vcf", { token: alice.accessToken });
+      const text = await res.text();
+      expect(text).toContain("bob@public.com");
+      expect(text).not.toContain("+9999999999");
+    });
+
+    it("includes opt-in contacts in VCF when viewer has circle access", async () => {
+      const alice = await createTestUser({ handle: "alice" });
+      const bob = await createTestUser({ handle: "bob", displayName: "Bob" });
+      await makeFriends(alice.id, bob.id);
+
+      const optInId = uuid();
+      await db.insert(contactLinks).values({
+        id: optInId,
+        userId: bob.id,
+        type: "phone",
+        label: "Phone",
+        value: "+9999999999",
+        visibility: "friends_only",
+        sharedByDefault: false,
+      });
+
+      // Bob creates a circle granting alice access
+      const circleId = uuid();
+      await db.insert(circles).values({ id: circleId, userId: bob.id, name: "Close" });
+      await db.insert(circleMembers).values({ circleId, friendId: alice.id });
+      await db.insert(circleContactGrants).values({ circleId, contactLinkId: optInId });
+
+      const res = await request("GET", "/export/vcf", { token: alice.accessToken });
+      const text = await res.text();
+      expect(text).toContain("+9999999999");
     });
   });
 

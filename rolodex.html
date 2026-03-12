@@ -235,6 +235,63 @@ min-height: 100dvh;
 .seed-btn { margin-top: 16px; font-size: 0.78rem; color: var(--stone-400); background: none; border: 1px dashed var(--stone-300); border-radius: 8px; padding: 8px 16px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
 .seed-btn:hover { border-color: var(--teal-500); color: var(--teal-600); }
 
+/* === GENERIC MODAL (reused for forms) === */
+.modal.modal-form { text-align: left; max-width: 400px; padding: 28px 24px; }
+.modal-form h3 { text-align: center; margin-bottom: 16px; }
+.modal-form .form-field { margin-bottom: 12px; }
+.modal-form .form-field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--stone-500); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+.modal-form .form-field input, .modal-form .form-field select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--stone-200); border-radius: 8px; font-family: inherit; font-size: 0.88rem; color: var(--stone-800); outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: #fff; }
+.modal-form .form-field input:focus, .modal-form .form-field select:focus { border-color: var(--teal-500); box-shadow: 0 0 0 3px rgba(20,184,166,0.12); }
+.modal-form .form-actions { display: flex; gap: 8px; margin-top: 16px; }
+.modal-form .form-actions .btn { flex: 1; }
+.form-row { display: flex; gap: 10px; }
+.form-row .form-field { flex: 1; }
+
+/* === TOGGLE SWITCH === */
+.toggle-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+.toggle-row .toggle-label { flex: 1; }
+.toggle-row .toggle-label-main { font-size: 0.85rem; font-weight: 500; color: var(--stone-700); }
+.toggle-row .toggle-label-desc { font-size: 0.72rem; color: var(--stone-400); margin-top: 1px; }
+.toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--stone-200); border-radius: 24px; transition: 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.2s; box-shadow: var(--shadow-sm); }
+.toggle input:checked + .toggle-slider { background: var(--teal-500); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+/* === OPT-IN BADGE === */
+.opt-in-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: var(--radius-full); font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; background: var(--amber-100); color: var(--amber-600); margin-left: 4px; vertical-align: middle; }
+
+/* === CONTACT LINK WITH ACTIONS === */
+.contact-link-wrap { position: relative; }
+.contact-actions { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
+.contact-actions button { width: 28px; height: 28px; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; font-size: 0.75rem; padding: 0; }
+.contact-actions .edit-btn { background: var(--stone-100); color: var(--stone-500); }
+.contact-actions .edit-btn:hover { background: var(--teal-100); color: var(--teal-600); }
+.contact-actions .del-btn { background: var(--stone-100); color: var(--stone-400); }
+.contact-actions .del-btn:hover { background: var(--rose-50); color: var(--rose-500); }
+
+/* === CIRCLE CHIPS === */
+.circle-chip { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 500; background: var(--violet-50); color: var(--violet-500); border: 1.5px solid transparent; cursor: pointer; transition: all 0.15s; }
+.circle-chip:hover { border-color: var(--violet-400); }
+.circle-chip .circle-count { font-size: 0.7rem; background: var(--violet-400); color: #fff; padding: 0 5px; border-radius: var(--radius-full); min-width: 18px; text-align: center; }
+
+/* === MEMBER / GRANT LIST === */
+.member-list { padding: 0 20px; display: flex; flex-direction: column; gap: 4px; }
+.member-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border: 1.5px solid var(--stone-200); border-radius: var(--radius-sm); }
+.member-row .person-info { flex: 1; min-width: 0; }
+
+/* === CHECKBOX LIST === */
+.checkbox-list { padding: 0 20px; display: flex; flex-direction: column; gap: 4px; }
+.checkbox-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border: 1.5px solid var(--stone-200); border-radius: var(--radius-sm); cursor: pointer; transition: border-color 0.15s; }
+.checkbox-item:hover { border-color: var(--teal-400); }
+.checkbox-item.selected { border-color: var(--teal-500); background: var(--teal-50); }
+.checkbox-item input[type="checkbox"] { accent-color: var(--teal-500); width: 18px; height: 18px; }
+
+/* === ADD BUTTON === */
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; margin: 8px 20px 0; background: var(--stone-100); border: 1.5px dashed var(--stone-300); border-radius: var(--radius-sm); color: var(--stone-500); font-family: inherit; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.add-btn:hover { border-color: var(--teal-500); color: var(--teal-600); background: var(--teal-50); }
+
 /* === LOADING === */
 .spinner { width: 20px; height: 20px; border: 2.5px solid var(--stone-200); border-top-color: var(--teal-500); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -249,6 +306,7 @@ min-height: 100dvh;
 
 <div class="app-shell" id="app"></div>
 <div class="toast" id="toast"></div>
+<div class="modal-overlay" id="form-modal"><div class="modal modal-form" id="form-modal-content"></div></div>
 <div class="modal-overlay" id="qr-modal">
   <div class="modal">
     <h3 id="qr-title">Share Profile</h3>
@@ -327,6 +385,7 @@ let unreadNotifCount = 0;
 // Caches for current render cycle
 let friendsCache = null;
 let pendingRequestsCache = null;
+let circlesCache = null;
 
 // ═══════════════════════════════════════════
 //  HELPERS
@@ -568,24 +627,33 @@ async function loadMe() {
 // ═══════════════════════════════════════════
 //  RENDERERS
 // ═══════════════════════════════════════════
-function renderContactLinks(contacts) {
+function renderContactLinks(contacts, editable = false) {
   if (!contacts || contacts.length === 0) {
     return '<div class="empty-state" style="padding:20px"><p>No contact links shared</p></div>';
   }
-  return contacts.map((c, i) => `
-    <a class="contact-link fade-in-up" style="animation-delay:${i * 0.04}s" href="#"
-       onclick="event.preventDefault(); copyContact('${escHtml(c.value)}', '${escHtml(c.label)}')">
-      <div class="contact-icon ${c.type}">${CONTACT_ICONS[c.type] || '🔗'}</div>
-      <div class="contact-text">
-        <div class="contact-label">${escHtml(c.label)}</div>
-        <div class="contact-value">${escHtml(c.value)}</div>
-      </div>
+  return contacts.map((c, i) => {
+    const optInBadge = editable && c.sharedByDefault === false ? '<span class="opt-in-badge">Opt-in</span>' : '';
+    const visLabel = editable && c.visibility ? `<span style="font-size:0.68rem;color:var(--stone-400);margin-left:4px">${c.visibility === 'everyone' ? '· Public' : c.visibility === 'friends_of_friends' ? '· FoF' : ''}</span>` : '';
+    const actions = editable ? `
+      <div class="contact-actions">
+        <button class="edit-btn" onclick="event.preventDefault();event.stopPropagation();openEditContact('${c.id}')" title="Edit">✏️</button>
+        <button class="del-btn" onclick="event.preventDefault();event.stopPropagation();deleteContact('${c.id}','${escHtml(c.label)}')" title="Delete">✕</button>
+      </div>` : `
       <svg width="16" height="16" fill="none" stroke="var(--stone-300)" stroke-width="2" stroke-linecap="round">
         <rect x="3" y="5" width="7" height="9" rx="1.5"/>
         <path d="M6 5V3.5A1.5 1.5 0 0 1 7.5 2h4A1.5 1.5 0 0 1 13 3.5v6a1.5 1.5 0 0 1-1.5 1.5H10"/>
-      </svg>
-    </a>
-  `).join('');
+      </svg>`;
+    return `
+    <a class="contact-link fade-in-up" style="animation-delay:${i * 0.04}s;${editable ? 'padding-right:72px' : ''}" href="#"
+       onclick="event.preventDefault(); copyContact('${escHtml(c.value)}', '${escHtml(c.label)}')">
+      <div class="contact-icon ${c.type}">${CONTACT_ICONS[c.type] || '🔗'}</div>
+      <div class="contact-text">
+        <div class="contact-label">${escHtml(c.label)}${optInBadge}${visLabel}</div>
+        <div class="contact-value">${escHtml(c.value)}</div>
+      </div>
+      ${actions}
+    </a>`;
+  }).join('');
 }
 
 function renderPersonRow(user, extra='', onclickOverride) {
@@ -646,8 +714,9 @@ function renderMyProfile() {
       </div>
       <div class="section-label">How to reach me</div>
       <div class="contact-grid">
-        ${renderContactLinks(ME.myContacts)}
+        ${renderContactLinks(ME.myContacts, true)}
       </div>
+      <button class="add-btn" onclick="openAddContact()">+ Add a way to reach you</button>
     </div>
   `;
 }
@@ -953,6 +1022,20 @@ function renderSettings() {
             <div class="settings-text">
               <div class="settings-label">Notifications</div>
               <div class="settings-desc">${unreadNotifCount > 0 ? `${unreadNotifCount} unread` : 'All caught up'}</div>
+            </div>
+            ${chevronSVG()}
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Circles</div>
+      <div class="settings-section">
+        <div class="settings-group">
+          <div class="settings-row" onclick="openCirclesView()">
+            <div class="settings-icon violet">⭕</div>
+            <div class="settings-text">
+              <div class="settings-label">Manage Circles</div>
+              <div class="settings-desc">Control who sees which contact methods</div>
             </div>
             ${chevronSVG()}
           </div>
@@ -1290,6 +1373,552 @@ async function markAllRead() {
     showToast('All notifications marked as read');
     loadNotificationsView();
   } catch {}
+}
+
+// ═══════════════════════════════════════════
+//  FORM MODAL HELPERS
+// ═══════════════════════════════════════════
+function openFormModal(html) {
+  document.getElementById('form-modal-content').innerHTML = html;
+  document.getElementById('form-modal').classList.add('open');
+}
+
+function closeFormModal() {
+  document.getElementById('form-modal').classList.remove('open');
+}
+
+document.getElementById('form-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeFormModal();
+});
+
+const CONTACT_TYPES = [
+  { value: 'phone', label: 'Phone' },
+  { value: 'email', label: 'Email' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'telegram', label: 'Telegram' },
+  { value: 'signal', label: 'Signal' },
+  { value: 'snapchat', label: 'Snapchat' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'custom', label: 'Custom' },
+];
+
+// ═══════════════════════════════════════════
+//  CONTACT CRUD
+// ═══════════════════════════════════════════
+function openAddContact() {
+  openFormModal(`
+    <h3>Add Contact Method</h3>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Type</label>
+        <select id="cf-type">${CONTACT_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join('')}</select>
+      </div>
+      <div class="form-field">
+        <label>Label</label>
+        <input type="text" id="cf-label" placeholder="e.g. Personal" value="">
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Value</label>
+      <input type="text" id="cf-value" placeholder="e.g. +1 (555) 123-4567">
+    </div>
+    <div class="form-field">
+      <label>Visibility</label>
+      <select id="cf-visibility">
+        <option value="friends_only">Friends only</option>
+        <option value="everyone">Everyone</option>
+        <option value="friends_of_friends">Friends of friends</option>
+      </select>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-label">
+        <div class="toggle-label-main">Share with new connections</div>
+        <div class="toggle-label-desc">If off, only shared via Circles</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="cf-shared" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div id="cf-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddContact()">Add</button>
+    </div>
+  `);
+  // Auto-fill label from type
+  document.getElementById('cf-type').addEventListener('change', function() {
+    const lbl = document.getElementById('cf-label');
+    if (!lbl.value) lbl.value = CONTACT_TYPES.find(t => t.value === this.value)?.label || '';
+  });
+}
+
+async function submitAddContact() {
+  const type = document.getElementById('cf-type').value;
+  const label = document.getElementById('cf-label').value.trim();
+  const value = document.getElementById('cf-value').value.trim();
+  const visibility = document.getElementById('cf-visibility').value;
+  const sharedByDefault = document.getElementById('cf-shared').checked;
+  const errEl = document.getElementById('cf-error');
+
+  if (!label || !value) { errEl.textContent = 'Label and value are required'; return; }
+
+  try {
+    const res = await api('/users/me/contacts', {
+      method: 'POST',
+      body: { type, label, value, visibility, sharedByDefault },
+    });
+    if (res.ok) {
+      closeFormModal();
+      await loadMe();
+      renderApp('my-profile');
+      showToast('Contact added!');
+    } else {
+      const data = await res.json();
+      errEl.textContent = data.error || 'Failed to add contact';
+    }
+  } catch { errEl.textContent = 'Network error'; }
+}
+
+function openEditContact(contactId) {
+  const c = ME.myContacts?.find(x => x.id === contactId);
+  if (!c) return;
+
+  openFormModal(`
+    <h3>Edit Contact</h3>
+    <div class="form-field">
+      <label>Label</label>
+      <input type="text" id="cf-label" value="${escHtml(c.label)}">
+    </div>
+    <div class="form-field">
+      <label>Value</label>
+      <input type="text" id="cf-value" value="${escHtml(c.value)}">
+    </div>
+    <div class="form-field">
+      <label>Visibility</label>
+      <select id="cf-visibility">
+        <option value="friends_only" ${c.visibility === 'friends_only' ? 'selected' : ''}>Friends only</option>
+        <option value="everyone" ${c.visibility === 'everyone' ? 'selected' : ''}>Everyone</option>
+        <option value="friends_of_friends" ${c.visibility === 'friends_of_friends' ? 'selected' : ''}>Friends of friends</option>
+      </select>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-label">
+        <div class="toggle-label-main">Share with new connections</div>
+        <div class="toggle-label-desc">If off, only shared via Circles</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="cf-shared" ${c.sharedByDefault !== false ? 'checked' : ''}><span class="toggle-slider"></span></label>
+    </div>
+    <div id="cf-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitEditContact('${contactId}')">Save</button>
+    </div>
+  `);
+}
+
+async function submitEditContact(contactId) {
+  const label = document.getElementById('cf-label').value.trim();
+  const value = document.getElementById('cf-value').value.trim();
+  const visibility = document.getElementById('cf-visibility').value;
+  const sharedByDefault = document.getElementById('cf-shared').checked;
+  const errEl = document.getElementById('cf-error');
+
+  if (!label || !value) { errEl.textContent = 'Label and value are required'; return; }
+
+  try {
+    const res = await api(`/users/me/contacts/${contactId}`, {
+      method: 'PATCH',
+      body: { label, value, visibility, sharedByDefault },
+    });
+    if (res.ok) {
+      closeFormModal();
+      await loadMe();
+      renderApp('my-profile');
+      showToast('Contact updated!');
+    } else {
+      const data = await res.json();
+      errEl.textContent = data.error || 'Failed to update';
+    }
+  } catch { errEl.textContent = 'Network error'; }
+}
+
+async function deleteContact(contactId, label) {
+  if (!confirm(`Remove "${label}"?`)) return;
+  try {
+    const res = await api(`/users/me/contacts/${contactId}`, { method: 'DELETE' });
+    if (res.ok) {
+      await loadMe();
+      renderApp('my-profile');
+      showToast('Contact removed');
+    } else { showToast('Failed to remove'); }
+  } catch { showToast('Network error'); }
+}
+
+// ═══════════════════════════════════════════
+//  CIRCLES MANAGEMENT
+// ═══════════════════════════════════════════
+async function openCirclesView() {
+  currentView = 'settings';
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="view">
+      <div class="top-bar">
+        <div class="top-bar-row">
+          <button class="back-btn" onclick="circlesCache=null;renderApp('settings')">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L5 9l6 5"/></svg>
+            Back
+          </button>
+          <button class="btn btn-sm btn-primary" onclick="openCreateCircle()">+ New Circle</button>
+        </div>
+        <h1 style="margin-top:8px">Circles</h1>
+        <div class="subtitle">Group friends to control contact sharing</div>
+      </div>
+      <div id="circles-list"><div class="loading-center"><div class="spinner"></div></div></div>
+    </div>
+    ${renderBottomNav()}
+  `;
+  await loadCirclesList();
+}
+
+async function loadCirclesList() {
+  try {
+    const res = await api('/users/me/circles');
+    if (!res.ok) return;
+    const data = await res.json();
+    circlesCache = data.circles;
+    const list = document.getElementById('circles-list');
+    if (!list) return;
+
+    if (!data.circles || data.circles.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <p>No circles yet</p>
+          <p style="margin-top:8px;font-size:0.78rem">Create a circle to control which contact methods specific friends can see</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = data.circles.map(circle => `
+      <div class="person-row" onclick="openCircleDetail('${circle.id}')">
+        <div class="settings-icon violet" style="width:44px;height:44px;border-radius:50%;font-size:1.2rem">⭕</div>
+        <div class="person-info">
+          <div class="person-name">${escHtml(circle.name)}</div>
+          <div class="person-handle">${circle.memberCount} member${circle.memberCount !== 1 ? 's' : ''} · ${circle.contactCount} contact${circle.contactCount !== 1 ? 's' : ''}</div>
+          ${circle.description ? `<div style="font-size:0.75rem;color:var(--stone-400);margin-top:2px">${escHtml(circle.description)}</div>` : ''}
+        </div>
+        ${chevronSVG()}
+      </div>
+    `).join('');
+  } catch {}
+}
+
+function openCreateCircle() {
+  openFormModal(`
+    <h3>New Circle</h3>
+    <div class="form-field">
+      <label>Name</label>
+      <input type="text" id="cc-name" placeholder="e.g. Inner Circle, Family">
+    </div>
+    <div class="form-field">
+      <label>Description (optional)</label>
+      <input type="text" id="cc-desc" placeholder="Who belongs in this circle?">
+    </div>
+    <div id="cc-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitCreateCircle()">Create</button>
+    </div>
+  `);
+}
+
+async function submitCreateCircle() {
+  const name = document.getElementById('cc-name').value.trim();
+  const description = document.getElementById('cc-desc').value.trim();
+  const errEl = document.getElementById('cc-error');
+  if (!name) { errEl.textContent = 'Name is required'; return; }
+
+  try {
+    const res = await api('/users/me/circles', {
+      method: 'POST',
+      body: { name, description },
+    });
+    if (res.ok) {
+      closeFormModal();
+      showToast('Circle created!');
+      await loadCirclesList();
+    } else {
+      const data = await res.json();
+      errEl.textContent = data.error || 'Failed to create circle';
+    }
+  } catch { errEl.textContent = 'Network error'; }
+}
+
+async function openCircleDetail(circleId) {
+  currentView = 'settings';
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="view">
+      <div class="top-bar">
+        <div class="top-bar-row">
+          <button class="back-btn" onclick="openCirclesView()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L5 9l6 5"/></svg>
+            Back
+          </button>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm btn-secondary" onclick="editCircle('${circleId}')">Edit</button>
+            <button class="btn btn-sm btn-secondary" style="color:var(--rose-500)" onclick="deleteCircle('${circleId}')">Delete</button>
+          </div>
+        </div>
+        <h1 style="margin-top:8px" id="circle-name"><div class="spinner" style="width:14px;height:14px;border-width:2px"></div></h1>
+        <div class="subtitle" id="circle-desc"></div>
+      </div>
+      <div id="circle-detail"><div class="loading-center"><div class="spinner"></div></div></div>
+    </div>
+    ${renderBottomNav()}
+  `;
+  await loadCircleDetail(circleId);
+}
+
+async function loadCircleDetail(circleId) {
+  try {
+    const res = await api(`/users/me/circles/${circleId}`);
+    if (!res.ok) { showToast('Failed to load circle'); return; }
+    const data = await res.json();
+    const circle = data.circle;
+
+    document.getElementById('circle-name').textContent = circle.name;
+    document.getElementById('circle-desc').textContent = circle.description || '';
+
+    const detail = document.getElementById('circle-detail');
+    if (!detail) return;
+
+    const memberRows = circle.members?.length > 0
+      ? circle.members.map(m => `
+        <div class="member-row">
+          ${avatarHTML(m, 'sm')}
+          <div class="person-info">
+            <div class="person-name" style="font-size:0.88rem">${escHtml(m.displayName)}</div>
+            <div class="person-handle">@${escHtml(m.handle)}</div>
+          </div>
+        </div>
+      `).join('')
+      : '<div class="empty-state" style="padding:16px"><p style="font-size:0.82rem">No members yet</p></div>';
+
+    const contactRows = circle.contacts?.length > 0
+      ? circle.contacts.map(c => `
+        <div class="member-row">
+          <div class="contact-icon ${c.type}" style="width:32px;height:32px;border-radius:8px;font-size:0.9rem">${CONTACT_ICONS[c.type] || '🔗'}</div>
+          <div class="person-info">
+            <div class="person-name" style="font-size:0.88rem">${escHtml(c.label)}</div>
+            <div class="person-handle">${escHtml(c.value)}</div>
+          </div>
+        </div>
+      `).join('')
+      : '<div class="empty-state" style="padding:16px"><p style="font-size:0.82rem">No contacts granted yet</p></div>';
+
+    detail.innerHTML = `
+      <div class="section-label">Members</div>
+      <div class="member-list">${memberRows}</div>
+      <button class="add-btn" onclick="openEditMembers('${circleId}')">Edit Members</button>
+
+      <div class="section-label" style="margin-top:16px">Shared Contact Methods</div>
+      <div class="member-list">${contactRows}</div>
+      <button class="add-btn" onclick="openEditContactGrants('${circleId}')">Edit Contact Access</button>
+    `;
+  } catch { showToast('Failed to load circle'); }
+}
+
+async function editCircle(circleId) {
+  try {
+    const res = await api(`/users/me/circles/${circleId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const circle = data.circle;
+
+    openFormModal(`
+      <h3>Edit Circle</h3>
+      <div class="form-field">
+        <label>Name</label>
+        <input type="text" id="cc-name" value="${escHtml(circle.name)}">
+      </div>
+      <div class="form-field">
+        <label>Description</label>
+        <input type="text" id="cc-desc" value="${escHtml(circle.description || '')}">
+      </div>
+      <div id="cc-error" class="form-error"></div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitEditCircle('${circleId}')">Save</button>
+      </div>
+    `);
+  } catch { showToast('Failed to load circle'); }
+}
+
+async function submitEditCircle(circleId) {
+  const name = document.getElementById('cc-name').value.trim();
+  const description = document.getElementById('cc-desc').value.trim();
+  const errEl = document.getElementById('cc-error');
+  if (!name) { errEl.textContent = 'Name is required'; return; }
+
+  try {
+    const res = await api(`/users/me/circles/${circleId}`, {
+      method: 'PATCH',
+      body: { name, description },
+    });
+    if (res.ok) {
+      closeFormModal();
+      showToast('Circle updated!');
+      await openCircleDetail(circleId);
+    } else {
+      const data = await res.json();
+      errEl.textContent = data.error || 'Failed to update';
+    }
+  } catch { errEl.textContent = 'Network error'; }
+}
+
+async function deleteCircle(circleId) {
+  if (!confirm('Delete this circle? Members will lose access to opt-in contacts.')) return;
+  try {
+    const res = await api(`/users/me/circles/${circleId}`, { method: 'DELETE' });
+    if (res.ok) {
+      showToast('Circle deleted');
+      openCirclesView();
+    } else { showToast('Failed to delete'); }
+  } catch { showToast('Network error'); }
+}
+
+async function openEditMembers(circleId) {
+  // Load current circle members and friend list
+  const [circleRes, friendsRes] = await Promise.all([
+    api(`/users/me/circles/${circleId}`),
+    api('/users/me/friends?limit=100'),
+  ]);
+  if (!circleRes.ok || !friendsRes.ok) { showToast('Failed to load data'); return; }
+
+  const circleData = await circleRes.json();
+  const friendsData = await friendsRes.json();
+  const currentMemberIds = new Set((circleData.circle.members || []).map(m => m.id));
+  const friends = friendsData.friends || [];
+
+  if (friends.length === 0) {
+    showToast('No friends to add');
+    return;
+  }
+
+  const checkboxes = friends.map(f => `
+    <label class="checkbox-item ${currentMemberIds.has(f.id) ? 'selected' : ''}" onclick="this.classList.toggle('selected')">
+      <input type="checkbox" value="${f.id}" ${currentMemberIds.has(f.id) ? 'checked' : ''}>
+      ${avatarHTML(f, 'sm')}
+      <div class="person-info">
+        <div class="person-name" style="font-size:0.88rem">${escHtml(f.displayName)}</div>
+        <div class="person-handle">@${escHtml(f.handle)}</div>
+      </div>
+    </label>
+  `).join('');
+
+  openFormModal(`
+    <h3>Edit Members</h3>
+    <div style="max-height:340px;overflow-y:auto;margin:0 -24px;padding:0 24px">
+      <div style="display:flex;flex-direction:column;gap:4px" id="member-checks">${checkboxes}</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitEditMembers('${circleId}')">Save</button>
+    </div>
+  `);
+}
+
+async function submitEditMembers(circleId) {
+  const checks = document.querySelectorAll('#member-checks input[type="checkbox"]:checked');
+  const memberIds = Array.from(checks).map(c => c.value);
+
+  try {
+    const res = await api(`/users/me/circles/${circleId}/members`, {
+      method: 'PUT',
+      body: { memberIds },
+    });
+    if (res.ok) {
+      closeFormModal();
+      showToast('Members updated!');
+      await openCircleDetail(circleId);
+    } else {
+      const data = await res.json();
+      showToast(data.error || 'Failed to update');
+    }
+  } catch { showToast('Network error'); }
+}
+
+async function openEditContactGrants(circleId) {
+  // Load current grants and user's contacts
+  const [circleRes, contactsRes] = await Promise.all([
+    api(`/users/me/circles/${circleId}`),
+    api('/users/me/contacts'),
+  ]);
+  if (!circleRes.ok || !contactsRes.ok) { showToast('Failed to load data'); return; }
+
+  const circleData = await circleRes.json();
+  const contactsData = await contactsRes.json();
+  const currentContactIds = new Set((circleData.circle.contacts || []).map(c => c.id));
+  const contacts = contactsData.contacts || [];
+
+  // Only show opt-in contacts (sharedByDefault: false) as candidates, but also show currently granted ones
+  const candidates = contacts.filter(c => c.sharedByDefault === false || currentContactIds.has(c.id));
+
+  if (candidates.length === 0) {
+    showToast('No opt-in contacts to manage. Mark a contact as opt-in first.');
+    return;
+  }
+
+  const checkboxes = candidates.map(c => `
+    <label class="checkbox-item ${currentContactIds.has(c.id) ? 'selected' : ''}" onclick="this.classList.toggle('selected')">
+      <input type="checkbox" value="${c.id}" ${currentContactIds.has(c.id) ? 'checked' : ''}>
+      <div class="contact-icon ${c.type}" style="width:32px;height:32px;border-radius:8px;font-size:0.9rem">${CONTACT_ICONS[c.type] || '🔗'}</div>
+      <div class="person-info">
+        <div class="person-name" style="font-size:0.88rem">${escHtml(c.label)}</div>
+        <div class="person-handle">${escHtml(c.value)}</div>
+      </div>
+    </label>
+  `).join('');
+
+  openFormModal(`
+    <h3>Contact Access</h3>
+    <p style="font-size:0.78rem;color:var(--stone-400);margin-bottom:12px;text-align:center">Choose which opt-in contacts this circle can see</p>
+    <div style="max-height:340px;overflow-y:auto;margin:0 -24px;padding:0 24px">
+      <div style="display:flex;flex-direction:column;gap:4px" id="grant-checks">${checkboxes}</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitEditContactGrants('${circleId}')">Save</button>
+    </div>
+  `);
+}
+
+async function submitEditContactGrants(circleId) {
+  const checks = document.querySelectorAll('#grant-checks input[type="checkbox"]:checked');
+  const contactIds = Array.from(checks).map(c => c.value);
+
+  try {
+    const res = await api(`/users/me/circles/${circleId}/contacts`, {
+      method: 'PUT',
+      body: { contactIds },
+    });
+    if (res.ok) {
+      closeFormModal();
+      showToast('Contact access updated!');
+      await openCircleDetail(circleId);
+    } else {
+      const data = await res.json();
+      showToast(data.error || 'Failed to update');
+    }
+  } catch { showToast('Network error'); }
+}
+
+function renderBottomNav() {
+  return `
+    <nav class="bottom-nav">
+      <button class="nav-btn" onclick="viewStack=[];renderApp('my-profile')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="8" r="4"/><path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>Me</button>
+      <button class="nav-btn" onclick="viewStack=[];friendsCache=null;renderApp('friends')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="7" r="3.5"/><circle cx="16" cy="9" r="2.5"/><path d="M1 19c0-3.9 3.1-7 7-7 1.6 0 3 .5 4.2 1.4M13 19c0-2.8 1.8-5 4-5s4 2.2 4 5"/></svg>Friends</button>
+      <button class="nav-btn" onclick="viewStack=[];renderApp('discover')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7.5"/><path d="M16 16l4 4"/><circle cx="11" cy="9" r="2.5"/><path d="M7 15c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>Discover</button>
+      <button class="nav-btn active" onclick="viewStack=[];renderApp('settings')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="3"/><path d="M11 2v3M11 17v3M2 11h3M17 11h3M4.9 4.9l2.1 2.1M15 15l2.1 2.1M4.9 17.1l2.1-2.1M15 7l2.1-2.1"/></svg>Settings</button>
+    </nav>`;
 }
 
 function doSignOut() {

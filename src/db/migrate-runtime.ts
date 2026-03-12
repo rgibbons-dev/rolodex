@@ -41,7 +41,8 @@ sqlite.exec(`
     label TEXT NOT NULL,
     value TEXT NOT NULL,
     sort_order INTEGER NOT NULL DEFAULT 0,
-    visibility TEXT NOT NULL DEFAULT 'friends_only'
+    visibility TEXT NOT NULL DEFAULT 'friends_only',
+    shared_by_default INTEGER NOT NULL DEFAULT 1
   );
   CREATE INDEX IF NOT EXISTS contact_links_user_idx ON contact_links(user_id);
 
@@ -83,6 +84,32 @@ sqlite.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE INDEX IF NOT EXISTS refresh_tokens_user_idx ON refresh_tokens(user_id);
+
+  CREATE TABLE IF NOT EXISTS circles (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS circles_user_idx ON circles(user_id);
+
+  CREATE TABLE IF NOT EXISTS circle_members (
+    circle_id TEXT NOT NULL REFERENCES circles(id) ON DELETE CASCADE,
+    friend_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    added_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (circle_id, friend_id)
+  );
+  CREATE INDEX IF NOT EXISTS circle_members_circle_idx ON circle_members(circle_id);
+  CREATE INDEX IF NOT EXISTS circle_members_friend_idx ON circle_members(friend_id);
+
+  CREATE TABLE IF NOT EXISTS circle_contact_grants (
+    circle_id TEXT NOT NULL REFERENCES circles(id) ON DELETE CASCADE,
+    contact_link_id TEXT NOT NULL REFERENCES contact_links(id) ON DELETE CASCADE,
+    PRIMARY KEY (circle_id, contact_link_id)
+  );
+  CREATE INDEX IF NOT EXISTS circle_contact_grants_circle_idx ON circle_contact_grants(circle_id);
+  CREATE INDEX IF NOT EXISTS circle_contact_grants_contact_idx ON circle_contact_grants(contact_link_id);
 `);
 
 sqlite.close();

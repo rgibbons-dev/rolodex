@@ -13,8 +13,8 @@ describe("smoke", () => {
     expect(body.status).toBe("ok");
   });
 
-  it("GET /nonexistent returns 404", async () => {
-    const res = await request("GET", "/nonexistent");
+  it("GET /users/nonexistent returns 404 for API routes", async () => {
+    const res = await request("GET", "/users/nonexistent");
     expect(res.status).toBe(404);
   });
 });

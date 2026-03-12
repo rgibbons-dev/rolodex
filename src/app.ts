@@ -49,15 +49,35 @@ app.route("/", qrRoutes);
 app.route("/", seedRoutes);
 app.route("/", circlesRoutes);
 
-// --- Serve frontend ---
+// --- Serve frontend (legacy) ---
 app.use("/rolodex.html", serveStatic({ path: "./rolodex.html" }));
 app.use("/rolodex-alpha.html", serveStatic({ path: "./rolodex-alpha.html" }));
+
+// --- Serve Solid frontend (built assets) ---
+app.use("/assets/*", serveStatic({ root: "./frontend/dist" }));
 
 // --- Health check ---
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-// --- 404 fallback ---
-app.notFound((c) => c.json({ error: "Not found" }, 404));
+// --- SPA fallback: serve index.html for client-side routes (skip API paths) ---
+const apiPrefixes = ["/auth", "/users", "/friends", "/discover", "/export", "/settings", "/qr", "/seed", "/health", "/uploads"];
+const spaFallback = serveStatic({ path: "./frontend/dist/index.html" });
+app.use("*", async (c, next) => {
+  const path = c.req.path;
+  if (apiPrefixes.some((p) => path.startsWith(p))) {
+    return next();
+  }
+  return spaFallback(c, next);
+});
+
+// --- 404 fallback (only for API routes that didn't match) ---
+app.notFound((c) => {
+  const accept = c.req.header("accept") || "";
+  if (accept.includes("application/json") || c.req.path.startsWith("/auth") || c.req.path.startsWith("/users") || c.req.path.startsWith("/friends") || c.req.path.startsWith("/discover") || c.req.path.startsWith("/export") || c.req.path.startsWith("/settings") || c.req.path.startsWith("/qr") || c.req.path.startsWith("/seed")) {
+    return c.json({ error: "Not found" }, 404);
+  }
+  return c.json({ error: "Not found" }, 404);
+});
 
 // --- Error handler ---
 app.onError((err, c) => {

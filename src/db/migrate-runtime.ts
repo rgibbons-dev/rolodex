@@ -112,6 +112,15 @@ sqlite.exec(`
   CREATE INDEX IF NOT EXISTS circle_contact_grants_contact_idx ON circle_contact_grants(contact_link_id);
 `);
 
+// --- Additive migrations for existing databases ---
+// SQLite doesn't support ADD COLUMN IF NOT EXISTS, so check pragma first.
+const contactLinkCols = sqlite.pragma("table_info(contact_links)") as Array<{ name: string }>;
+const hasSharedByDefault = contactLinkCols.some((c) => c.name === "shared_by_default");
+if (!hasSharedByDefault) {
+  sqlite.exec(`ALTER TABLE contact_links ADD COLUMN shared_by_default INTEGER NOT NULL DEFAULT 1`);
+  console.log("Added shared_by_default column to contact_links.");
+}
+
 sqlite.close();
 
 console.log("Database tables ensured.");

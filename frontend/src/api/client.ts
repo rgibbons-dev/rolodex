@@ -1,6 +1,7 @@
 import { getTokens, saveTokens, clearTokens } from "../stores/auth";
 
 let baseUrl = "";
+let refreshPromise: Promise<boolean> | null = null;
 
 export function setBaseUrl(url: string) {
   baseUrl = url;
@@ -10,6 +11,33 @@ export interface ApiOptions {
   method?: string;
   body?: unknown;
   headers?: Record<string, string>;
+}
+
+async function tryRefresh(staleRefreshToken: string): Promise<boolean> {
+  try {
+    const refreshRes = await fetch(`${baseUrl}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: staleRefreshToken }),
+    });
+
+    if (refreshRes.ok) {
+      const newTokens = await refreshRes.json();
+      saveTokens(newTokens);
+      return true;
+    } else {
+      // Only clear if tokens haven't changed (avoid wiping fresh tokens from seed/login)
+      const current = getTokens();
+      if (current?.refreshToken === staleRefreshToken) {
+        clearTokens();
+      }
+      return false;
+    }
+  } catch {
+    return false;
+  } finally {
+    refreshPromise = null;
+  }
 }
 
 export async function api(path: string, opts: ApiOptions = {}): Promise<Response> {
@@ -30,22 +58,19 @@ export async function api(path: string, opts: ApiOptions = {}): Promise<Response
 
   let res = await fetch(`${baseUrl}${path}`, init);
 
-  // Auto-refresh on 401
+  // Auto-refresh on 401 — deduplicate concurrent refreshes
   if (res.status === 401 && tokens?.refreshToken) {
-    const refreshRes = await fetch(`${baseUrl}/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken: tokens.refreshToken }),
-    });
+    if (!refreshPromise) {
+      refreshPromise = tryRefresh(tokens.refreshToken);
+    }
+    const refreshed = await refreshPromise;
 
-    if (refreshRes.ok) {
-      const newTokens = await refreshRes.json();
-      saveTokens(newTokens);
-      // Retry with new token
-      headers["Authorization"] = `Bearer ${newTokens.accessToken}`;
-      res = await fetch(`${baseUrl}${path}`, { method, headers, body: init.body });
-    } else {
-      clearTokens();
+    if (refreshed) {
+      const newTokens = getTokens();
+      if (newTokens) {
+        headers["Authorization"] = `Bearer ${newTokens.accessToken}`;
+        res = await fetch(`${baseUrl}${path}`, { method, headers, body: init.body });
+      }
     }
   }
 

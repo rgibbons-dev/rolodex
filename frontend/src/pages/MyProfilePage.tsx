@@ -1,7 +1,7 @@
 import { Component, createSignal, createResource, For, Show, onMount } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import { api } from "../api/client";
-import { getHandle, me, setMe } from "../stores/auth";
+import { getHandle, isAuthenticated, me, setMe } from "../stores/auth";
 import type { ContactLink, Profile, MeData } from "../types";
 import { Avatar } from "../components/Avatar";
 import { ContactLinkRow } from "../components/ContactLinkRow";
@@ -69,6 +69,7 @@ export const MyProfilePage: Component = () => {
   }
 
   onMount(async () => {
+    if (!isAuthenticated()) return;
     try {
       const res = await api("/users/me/friends?limit=1");
       if (res.ok) {

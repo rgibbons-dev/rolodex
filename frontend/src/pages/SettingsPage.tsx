@@ -63,7 +63,7 @@ export const SettingsPage: Component = () => {
 
   function doSignOut() {
     clearTokens();
-    window.location.href = "/auth";
+    navigate("/auth", { replace: true });
   }
 
   return (

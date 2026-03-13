@@ -57,11 +57,14 @@ app.use("/assets/*", serveStatic({ root: "./frontend/dist" }));
 app.get("/health", (c) => c.json({ status: "ok" }));
 
 // --- SPA fallback: serve index.html for client-side routes (skip API paths) ---
-const apiPrefixes = ["/auth", "/users", "/friends", "/discover", "/export", "/settings", "/qr", "/health", "/uploads"];
+// These prefixes are API-only (no matching SPA route):
+const apiOnlyPrefixes = ["/users/", "/discover/", "/export/", "/qr/", "/health", "/uploads/"];
+// These prefixes have both API sub-routes and a bare SPA route (e.g. /auth is SPA, /auth/login is API):
+const sharedPrefixes = ["/auth/", "/friends/", "/settings/"];
 const spaFallback = serveStatic({ path: "./frontend/dist/index.html" });
 app.use("*", async (c, next) => {
   const path = c.req.path;
-  if (apiPrefixes.some((p) => path.startsWith(p))) {
+  if (apiOnlyPrefixes.some((p) => path.startsWith(p)) || sharedPrefixes.some((p) => path.startsWith(p))) {
     return next();
   }
   return spaFallback(c, next);

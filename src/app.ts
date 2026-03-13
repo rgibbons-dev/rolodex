@@ -47,7 +47,7 @@ app.route("/", qrRoutes);
 app.route("/", circlesRoutes);
 
 // --- Serve frontend (legacy) ---
-app.use("/rolodex.html", serveStatic({ path: "./rolodex.html" }));
+app.use("/rolodex-beta.html", serveStatic({ path: "./rolodex-beta.html" }));
 app.use("/rolodex-alpha.html", serveStatic({ path: "./rolodex-alpha.html" }));
 
 // --- Serve Solid frontend (built assets) ---

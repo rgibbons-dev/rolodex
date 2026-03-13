@@ -42,6 +42,8 @@ export const MyProfilePage: Component = () => {
   const [friendCount, setFriendCount] = createSignal<number | null>(null);
   const [showAddModal, setShowAddModal] = createSignal(false);
   const [editContact, setEditContact] = createSignal<ContactLink | null>(null);
+  const [showQrModal, setShowQrModal] = createSignal(false);
+  const [qrDataUrl, setQrDataUrl] = createSignal("");
 
   // Form state
   const [cfType, setCfType] = createSignal("phone");
@@ -50,6 +52,21 @@ export const MyProfilePage: Component = () => {
   const [cfVisibility, setCfVisibility] = createSignal("friends_only");
   const [cfShared, setCfShared] = createSignal(true);
   const [cfError, setCfError] = createSignal("");
+
+  async function openQr() {
+    const h = getHandle();
+    if (!h) return;
+    try {
+      const res = await api(`/qr/${h}/data-url`);
+      if (res.ok) {
+        const d = await res.json();
+        setQrDataUrl(d.dataUrl);
+        setShowQrModal(true);
+      } else {
+        showToast("Failed to load QR code");
+      }
+    } catch { showToast("Network error"); }
+  }
 
   onMount(async () => {
     try {
@@ -135,10 +152,7 @@ export const MyProfilePage: Component = () => {
             <div class="subtitle">Your connection card</div>
           </div>
           <div style={{ display: "flex", gap: "8px" }}>
-            <button class="icon-btn" onClick={() => {
-              const h = getHandle();
-              if (h) window.open(`/qr/${h}/data-url`, "_blank");
-            }} title="Share QR Code">
+            <button class="icon-btn" onClick={openQr} title="Share QR Code">
               <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                 <rect x="2" y="2" width="5" height="5" rx="1" /><rect x="11" y="2" width="5" height="5" rx="1" />
                 <rect x="2" y="11" width="5" height="5" rx="1" /><rect x="12" y="12" width="1.5" height="1.5" />
@@ -272,6 +286,22 @@ export const MyProfilePage: Component = () => {
         <div class="form-actions">
           <button class="btn btn-secondary" onClick={() => setEditContact(null)}>Cancel</button>
           <button class="btn btn-primary" onClick={submitEdit}>Save</button>
+        </div>
+      </Modal>
+
+      {/* QR Code Modal */}
+      <Modal open={showQrModal()} onClose={() => setShowQrModal(false)}>
+        <h3 style={{ "text-align": "center" }}>Your QR Code</h3>
+        <p style={{ "text-align": "center", "font-size": "0.85rem", color: "var(--stone-400)" }}>
+          Share this to let people find your profile
+        </p>
+        <Show when={qrDataUrl()}>
+          <div style={{ display: "flex", "justify-content": "center", padding: "16px 0" }}>
+            <img src={qrDataUrl()} alt="Profile QR Code" style={{ width: "200px", height: "200px" }} />
+          </div>
+        </Show>
+        <div class="form-actions">
+          <button class="btn btn-secondary" onClick={() => setShowQrModal(false)}>Close</button>
         </div>
       </Modal>
     </div>

@@ -10,7 +10,7 @@ import discoveryRoutes from "./routes/discovery.js";
 import exportRoutes from "./routes/export.js";
 import settingsRoutes from "./routes/settings.js";
 import qrRoutes from "./routes/qr.js";
-import seedRoutes from "./routes/seed.js";
+import circlesRoutes from "./routes/circles.js";
 
 import { rateLimit } from "./lib/rate-limit.js";
 
@@ -28,7 +28,6 @@ app.use("*", cors({
 app.use("/discover/search", rateLimit({ prefix: "search", max: 30, windowSeconds: 60 }));
 app.use("/friends/request/*", rateLimit({ prefix: "friend_req", max: 20, windowSeconds: 60 }));
 app.use("/auth/*", rateLimit({ prefix: "auth", max: 10, windowSeconds: 60 }));
-app.use("/seed", rateLimit({ prefix: "seed", max: 5, windowSeconds: 60 }));
 app.use("/export/*", rateLimit({ prefix: "export", max: 20, windowSeconds: 60 }));
 app.use("/qr/*", rateLimit({ prefix: "qr", max: 30, windowSeconds: 60 }));
 app.use("/users/me", rateLimit({ prefix: "profile_update", max: 20, windowSeconds: 60 }));
@@ -45,17 +44,40 @@ app.route("/", discoveryRoutes);
 app.route("/", exportRoutes);
 app.route("/", settingsRoutes);
 app.route("/", qrRoutes);
-app.route("/", seedRoutes);
+app.route("/", circlesRoutes);
 
-// --- Serve frontend ---
-app.use("/rolodex.html", serveStatic({ path: "./rolodex.html" }));
+// --- Serve frontend (legacy) ---
+app.use("/rolodex-beta.html", serveStatic({ path: "./rolodex-beta.html" }));
 app.use("/rolodex-alpha.html", serveStatic({ path: "./rolodex-alpha.html" }));
+
+// --- Serve Solid frontend (built assets) ---
+app.use("/assets/*", serveStatic({ root: "./frontend/dist" }));
 
 // --- Health check ---
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-// --- 404 fallback ---
-app.notFound((c) => c.json({ error: "Not found" }, 404));
+// --- SPA fallback: serve index.html for client-side routes (skip API paths) ---
+// These prefixes are API-only (no matching SPA route):
+const apiOnlyPrefixes = ["/users/", "/discover/", "/export/", "/qr/", "/health", "/uploads/"];
+// These prefixes have both API sub-routes and a bare SPA route (e.g. /auth is SPA, /auth/login is API):
+const sharedPrefixes = ["/auth/", "/friends/", "/settings/"];
+const spaFallback = serveStatic({ path: "./frontend/dist/index.html" });
+app.use("*", async (c, next) => {
+  const path = c.req.path;
+  if (apiOnlyPrefixes.some((p) => path.startsWith(p)) || sharedPrefixes.some((p) => path.startsWith(p))) {
+    return next();
+  }
+  return spaFallback(c, next);
+});
+
+// --- 404 fallback (only for API routes that didn't match) ---
+app.notFound((c) => {
+  const accept = c.req.header("accept") || "";
+  if (accept.includes("application/json") || c.req.path.startsWith("/auth") || c.req.path.startsWith("/users") || c.req.path.startsWith("/friends") || c.req.path.startsWith("/discover") || c.req.path.startsWith("/export") || c.req.path.startsWith("/settings") || c.req.path.startsWith("/qr")) {
+    return c.json({ error: "Not found" }, 404);
+  }
+  return c.json({ error: "Not found" }, 404);
+});
 
 // --- Error handler ---
 app.onError((err, c) => {

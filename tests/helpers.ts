@@ -1,7 +1,7 @@
 import app from "../src/app.js";
 import { authService } from "../src/services/auth.js";
 import { db } from "../src/db/index.js";
-import { users, contactLinks, friendships, magicLinks, refreshTokens, notifications } from "../src/db/schema.js";
+import { users, contactLinks, friendships, magicLinks, refreshTokens, notifications, circles, circleMembers, circleContactGrants } from "../src/db/schema.js";
 import { eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { cache } from "../src/services/cache.js";
@@ -65,6 +65,9 @@ export function request(method: string, path: string, options: {
  * Clean all tables between tests.
  */
 export async function cleanDB() {
+  await db.delete(circleContactGrants);
+  await db.delete(circleMembers);
+  await db.delete(circles);
   await db.delete(notifications);
   await db.delete(refreshTokens);
   await db.delete(magicLinks);
